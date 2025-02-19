@@ -1,0 +1,11 @@
+package com.park.conductor.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+val Green80 = Color(0xFFD0EDE3)
+val GreenGrey80 = Color(0xFFB0C4A7)
+val Lime80 = Color(0xFFCFEA99)
+
+val Green40 = Color(0xFF04724D)
+val GreenGrey40 = Color(0xFF5F7058)
+val Lime40 = Color(0xFF89A84B)
