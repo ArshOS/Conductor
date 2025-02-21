@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ezetap.sdk.EzetapResponse
 import com.park.conductor.ui.theme.ConductorTheme
 
 import com.park.conductor.common.components.RippleAnywhereScreen
@@ -30,10 +31,27 @@ import com.park.conductor.presentation.dummy_pay.DummyPayComposable
 import com.park.conductor.presentation.login.LoginViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
+import com.ezetap.sdk.EzetapPayApis
+import com.ezetap.sdk.EzetapPayApi
+
+
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Ezetap SDK
+//        Ezetap.initialize(this, "<YOUR_USERNAME>", "<YOUR_SECRET_KEY>", object : EzetapCallback {
+//            override fun onSuccess(response: EzetapResponse) {
+//                Log.d("Ezetap", "SDK Initialized Successfully")
+//            }
+//
+//            override fun onFailure(error: String) {
+//                Log.e("Ezetap", "SDK Initialization Failed: $error")
+//            }
+//        })
+
         enableEdgeToEdge()
         setContent {
             ConductorTheme {

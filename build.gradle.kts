@@ -8,6 +8,8 @@ buildscript {
     }
     dependencies {
         // Add any classpath dependencies here if needed
+//        compile(name: 'ezetapandroidsdk-3.9', ext: 'aar')
+        classpath(files("libs/ezetapandroidsdk-3.9.aar"))
     }
 }
 

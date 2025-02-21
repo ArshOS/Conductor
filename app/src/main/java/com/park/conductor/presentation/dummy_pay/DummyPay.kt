@@ -1,13 +1,24 @@
 package com.park.conductor.presentation.dummy_pay
 
+import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BeachAccess
+import androidx.compose.material.icons.filled.CurrencyRupee
+import androidx.compose.material.icons.filled.Password
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.MaterialTheme
@@ -15,12 +26,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+//import com.park.conductor.ezetap.EzeCordovaSampleActivity
+import com.park.conductor.ezetap.EzeNativeSampleActivity
+import com.park.conductor.ezetap.Setting
 import com.park.conductor.ui.theme.Green40
 
 @Composable
@@ -36,8 +55,7 @@ fun DummyPayComposable(
         Button(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(30.dp)
-                .border(1.dp, Green40, RoundedCornerShape(12.dp)),
+                .padding(30.dp),
             colors = ButtonColors(
                 containerColor = Color.Transparent,
                 contentColor = Green40,
@@ -46,13 +64,96 @@ fun DummyPayComposable(
             ),
             onClick = { /*TODO*/ }
         ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .border(2.dp, Color(0XFFFFA500), RoundedCornerShape(3.dp))
+                    .padding(2.dp)
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .rotate(0f)
+                        .size(40.dp),
+                    imageVector = Icons.Filled.CurrencyRupee,
+                    contentDescription = null,
+                    tint = Color(0XFF002D62)
+                )
+                Text(
+                    modifier = Modifier.background(Color(0XFF002D62)),
+                    text = "NIK",
+                    fontStyle = FontStyle.Normal,
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0XFFFFA500)
+                )
+                Text(
+                    modifier = Modifier.background(Color(0XFFFFA500)),
+                    text = "PAY",
+                    fontStyle = FontStyle.Normal,
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0XFF002D62)
+                )
+            }
+
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "Powered by ", color = Color.LightGray)
             Text(
-                text = "DUMMYPAY",
-                fontStyle = FontStyle.Italic,
-                style = MaterialTheme.typography.displaySmall,
+                text = "INNOBLES",
+                textDecoration = TextDecoration.Underline,
+                color = Color.LightGray,
                 fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Monospace
+                fontStyle = FontStyle.Italic
             )
         }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            val context = LocalContext.current
+
+            Button(
+                onClick = {
+                    val intent = Intent(context, EzeNativeSampleActivity::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            {
+                Text("Native")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+//            Button(onClick = { navigateTo(EzeCordovaSampleActivity::class.java) }, modifier = Modifier.fillMaxWidth()) {
+//                Text("Cordova")
+//            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    val intent = Intent(context, Setting::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Settings")
+            }
+        }
     }
+}
+
+
+@Composable
+@Preview
+private fun DefaultPreview() {
+    DummyPayComposable(
+        PaddingValues(),
+        rememberNavController()
+    )
 }

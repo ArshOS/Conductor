@@ -16,9 +16,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        flatDir {
+            dirs("libs") // Change "libs" to the actual directory path
+        }
     }
 }
 
 rootProject.name = "Conductor"
 include(":app")
- 

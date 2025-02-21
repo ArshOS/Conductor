@@ -1,3 +1,6 @@
+import org.gradle.internal.impldep.bsh.commands.dir
+import org.gradle.internal.impldep.com.fasterxml.jackson.core.JsonPointer.compile
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -130,7 +133,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     //Permissions
-    implementation ("com.google.accompanist:accompanist-permissions:0.31.1-alpha")
+    implementation("com.google.accompanist:accompanist-permissions:0.31.1-alpha")
 
     implementation("io.coil-kt:coil-gif:2.4.0") // Adds GIF support
 
@@ -139,5 +142,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-placeholder-material:0.32.0")
 
     implementation("com.airbnb.android:lottie-compose:6.1.0")
+
+    implementation(files("libs/ezetapandroidsdk-3.9.aar"))
 
 }
