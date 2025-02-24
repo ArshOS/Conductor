@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BeachAccess
 import androidx.compose.material.icons.filled.CurrencyRupee
@@ -50,55 +49,29 @@ fun DummyPayComposable(
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
     ) {
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(30.dp),
-            colors = ButtonColors(
-                containerColor = Color.Transparent,
-                contentColor = Green40,
-                disabledContentColor = Green40,
-                disabledContainerColor = Color.Transparent
-            ),
-            onClick = { /*TODO*/ }
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .border(2.dp, Color(0XFFFFA500), RoundedCornerShape(3.dp))
-                    .padding(2.dp)
-            ) {
-                Icon(
-                    modifier = Modifier
-                        .rotate(0f)
-                        .size(40.dp),
-                    imageVector = Icons.Filled.CurrencyRupee,
-                    contentDescription = null,
-                    tint = Color(0XFF002D62)
-                )
-                Text(
-                    modifier = Modifier.background(Color(0XFF002D62)),
-                    text = "NIK",
-                    fontStyle = FontStyle.Normal,
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace,
-                    color = Color(0XFFFFA500)
-                )
-                Text(
-                    modifier = Modifier.background(Color(0XFFFFA500)),
-                    text = "PAY",
-                    fontStyle = FontStyle.Normal,
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontFamily = FontFamily.Monospace,
-                    color = Color(0XFF002D62)
-                )
-            }
 
+        Spacer(modifier = Modifier.padding(10.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "₹10.0",
+                style = MaterialTheme.typography.displayMedium,
+                fontWeight = FontWeight.Bold,
+                color = Green40
+            )
         }
+
+        Spacer(modifier = Modifier.padding(10.dp))
+
+        ButtonGrid(totalButtons = 8, buttonsPerRow = 2, buttonData = buttonData)
 
         Row(
             verticalAlignment = Alignment.CenterVertically

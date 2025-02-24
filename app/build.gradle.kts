@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.play.services.cast.framework)
+    implementation(libs.androidx.gridlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -144,5 +145,6 @@ dependencies {
     implementation("com.airbnb.android:lottie-compose:6.1.0")
 
     implementation(files("libs/ezetapandroidsdk-3.9.aar"))
+    implementation("org.apache.cordova:framework:10.0.0")
 
 }

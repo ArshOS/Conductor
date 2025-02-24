@@ -32,6 +32,9 @@ public class EztapActivty extends Activity implements OnClickListener {
 		if (id == R.id.btnNative) {
 			intent = new Intent(EztapActivty.this, EzeNativeSampleActivity.class);
 			startActivity(intent);
+		} else if (id == R.id.btnCordova) {
+//			intent = new Intent(EztapActivty.this, EzeCordovaSampleActivity.class);
+//			startActivity(intent);
 		} else if (id == R.id.btnSettings) {
 			intent = new Intent(EztapActivty.this, Setting.class);
 			startActivity(intent);

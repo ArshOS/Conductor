@@ -19,11 +19,11 @@
 
 package com.park.conductor.ezetap;
 
-//import org.apache.cordova.CordovaActivity;
-//
-//import android.content.Intent;
-//import android.os.Bundle;
-//
+import org.apache.cordova.CordovaActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+
 //public class EzeCordovaSampleActivity extends CordovaActivity
 //{
 //    @Override
