@@ -5,8 +5,10 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.park.conductor.common.utilities.App
+import com.park.conductor.data.remote.dto.AttractionDetailsResponse
 import com.park.conductor.data.remote.dto.DashboardResponse
 import com.park.conductor.data.remote.dto.LoginResponse
+import com.park.conductor.data.remote.dto.TicketPriceResponse
 import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -19,8 +21,14 @@ import java.util.concurrent.TimeUnit
 
 interface ApiService {
 
-    @GET("tspuser_login")
+    @GET("pos_user_login")
     suspend fun login(@QueryMap param: HashMap<String, Any>): LoginResponse
+
+    @GET("pos_attraction_details")
+    suspend fun attraction(@QueryMap param: HashMap<String, Any>): AttractionDetailsResponse
+
+    @GET("pos_user_ticket_price")
+    suspend fun billing(@QueryMap param: HashMap<String, Any>): TicketPriceResponse
 
     @GET("tspuser_dashboard")
     suspend fun dashboard(@QueryMap param: HashMap<String, Any>): DashboardResponse

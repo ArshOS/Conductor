@@ -1,8 +1,11 @@
 package com.park.conductor.presentation.dashboard
 
+import android.app.Activity
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,15 +18,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.StickyNote2
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material.icons.filled.Forest
-import androidx.compose.material.icons.outlined.CurrencyExchange
-import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,27 +36,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
+import com.park.conductor.R
 import com.park.conductor.common.components.DottedLine
+import com.park.conductor.common.components.NationalityTag
+import com.park.conductor.common.components.PassengerCounterComposable
 import com.park.conductor.common.utilities.Prefs
 import com.park.conductor.data.remote.api.ApiConstant
 import com.park.conductor.data.remote.api.ApiService
 import com.park.conductor.data.remote.api.ApiState
 import com.park.conductor.data.remote.dto.DashboardResponse
 import com.park.conductor.navigation.DummyPay
-import com.park.conductor.presentation.dashboard.components.InfoCard
+import com.park.conductor.presentation.MainActivity
 import com.park.conductor.ui.theme.Green40
-import com.park.conductor.ui.theme.Green80
+import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Local
 
 @Composable
 fun DashboardScreenComposable(
@@ -136,100 +143,34 @@ fun SetUpObserverDashboard(
 @Composable
 fun BuildDashboardUI(data: DashboardResponse?, navController: NavHostController) {
 
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(10.dp, 20.dp, 10.dp, 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-//        InfoCard(
-//            title = "Tickets Sold",
-//            value = (data?.totalTickets ?: 0).toString(),
-//            icon = Icons.AutoMirrored.Outlined.StickyNote2
-//        )
-//
-//        Spacer(modifier = Modifier.padding(10.dp))
-//
-//        InfoCard(
-//            title = "Amount Collected",
-//            value = "₹ ${data?.totalAmount ?: 0}",
-//            icon = Icons.Outlined.CurrencyExchange
-//        )
-//
-//        Spacer(modifier = Modifier.padding(10.dp))
-//
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .background(Green80, RoundedCornerShape(12.dp))
-//                .padding(10.dp),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Icon(
-//                modifier = Modifier.size(30.dp),
-//                imageVector = Icons.Outlined.History,
-//                contentDescription = null,
-//                tint = Green40
-//            )
-//            Spacer(modifier = Modifier.padding(5.dp))
-//            Text(
-//                text = "Transaction History",
-//                color = Green40,
-//                style = MaterialTheme.typography.bodyLarge
-//            )
-//        }
-//
-//        Spacer(modifier = Modifier.padding(10.dp))
 
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(30.dp),
-            colors = ButtonColors(
-                containerColor = Color.Transparent,
-                contentColor = Green40,
-                disabledContentColor = Green40,
-                disabledContainerColor = Color.Transparent
-            ),
-            onClick = { /*TODO*/ }
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .border(2.dp, Color(0XFFFFA500), RoundedCornerShape(3.dp))
-                    .padding(2.dp)
-            ) {
-                androidx.compose.material.Icon(
-                    modifier = Modifier
-                        .rotate(0f)
-                        .size(40.dp),
-                    imageVector = Icons.Filled.CurrencyRupee,
-                    contentDescription = null,
-                    tint = Color(0XFF002D62)
-                )
-                Text(
-                    modifier = Modifier.background(Color(0XFF002D62)),
-                    text = "NIK",
-                    fontStyle = FontStyle.Normal,
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace,
-                    color = Color(0XFFFFA500)
-                )
-                Text(
-                    modifier = Modifier.background(Color(0XFFFFA500)),
-                    text = "PAY",
-                    fontStyle = FontStyle.Normal,
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontFamily = FontFamily.Monospace,
-                    color = Color(0XFF002D62)
-                )
-            }
+        Text(
+            modifier = Modifier.clickable {
+                Prefs.clear()
+//                    navController.navigate(Login)
 
-        }
+
+                val activity = context as? Activity
+                activity?.apply {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                }
+            },
+            text = "Logout"
+        )
 
         Spacer(modifier = Modifier.padding(10.dp))
+//        PassengerCounterComposable(title = "Kids", subtitle = "3-12 yrs", rateInINR = 199f)
+//        PassengerCounterComposable(title = "Adults", subtitle = "12-60 yrs", rateInINR = 199f)
+//        PassengerCounterComposable(title = "Sr. Citizens", subtitle = "60+ yrs", rateInINR = 199f)
+        Spacer(modifier = Modifier.padding(5.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -345,6 +286,20 @@ fun BuildDashboardUI(data: DashboardResponse?, navController: NavHostController)
 @Composable
 private fun DefaultPreview() {
     Column {
+        Spacer(modifier = Modifier.padding(5.dp))
+        Box(modifier = Modifier.padding(start = 10.dp)) {
+            NationalityTag(
+                listOf("Indian", "Foreigner"),
+                listOf(
+                    painterResource(id = R.drawable.ic_india),
+                    painterResource(id = R.drawable.ic_globe)
+                )
+            )
+        }
+//        PassengerCounterComposable(title = "Kids", subtitle = "3-12 yrs", rateInINR = 199f)
+//        PassengerCounterComposable(title = "Adults", subtitle = "12-60 yrs", rateInINR = 199f)
+//        PassengerCounterComposable(title = "Sr. Citizens", subtitle = "60+ yrs", rateInINR = 199f)
+        Spacer(modifier = Modifier.padding(5.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,

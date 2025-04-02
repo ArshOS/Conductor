@@ -25,7 +25,7 @@ fun NationalityTag(labels: List<String>, painterResources: List<Painter>? = null
         modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)
     ) {
         if (!painterResources.isNullOrEmpty() && painterResources.size == 1 ) {
-            Icon(painter = painterResources[0], contentDescription = null)
+            Icon(painter = painterResources[0], contentDescription = null, tint = Color.Unspecified)
         }
 
         Spacer(modifier = Modifier.padding(2.dp))

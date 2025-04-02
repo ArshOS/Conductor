@@ -47,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.park.conductor.R
 import com.park.conductor.common.utilities.Prefs
@@ -55,15 +56,15 @@ import com.park.conductor.data.remote.api.ApiService
 import com.park.conductor.data.remote.api.ApiState
 import com.park.conductor.data.remote.dto.AttractionDetailsResponse
 import com.park.conductor.data.remote.dto.Data
+import com.park.conductor.navigation.Billing
 import com.park.conductor.presentation.MainActivity
-import com.park.conductor.presentation.billing.BillingViewModel
 import com.park.conductor.ui.theme.Green40
 
 @Composable
 fun AttractionScreenComposable(
     paddingValues1: PaddingValues,
     navController: NavHostController,
-    attractionViewModel: BillingViewModel = hiltViewModel()
+    attractionViewModel: AttractionViewModel = hiltViewModel()
 ) {
 
     val param = remember {
@@ -125,7 +126,6 @@ fun TopBarComposable(menu: ImageVector, parkName: String?, logoLda: Int) {
                 color = Color.White
             )
         }
-
         Image(painter = painterResource(logoLda), contentDescription = null)
 
     }
@@ -159,21 +159,6 @@ fun SetUpObserverAttraction(
 //            BuildApiFailUI(state.message, navController)
             Log.d("TAG: ", "Attraction API Failure: errorMessage ${state.message}")
 
-//            val errorMessage =
-//                (state as ApiState.Error<DashboardResponse>).message ?: "Unknown error occurred"
-//            val snackbarHostState = remember { SnackbarHostState() }
-//
-//            LaunchedEffect(errorMessage) {
-//                snackbarHostState.showSnackbar(errorMessage)
-//            }
-//
-//            Scaffold(
-//                snackbarHost = {
-//                    SnackbarHost(hostState = snackbarHostState)
-//                },
-//            ) { contentPadding ->
-//                Log.d("TAG", contentPadding.toString())
-//            }
         }
     }
 }
@@ -209,7 +194,7 @@ fun BuildAttractionsUI(data: AttractionDetailsResponse?, navController: NavHostC
                 .weight(1f)
         ) {
             items(data?.data ?: emptyList()) { task ->
-                AttractionComposable(attraction = task)
+                AttractionComposable(attraction = task, navController = navController)
             }
         }
 
@@ -217,7 +202,7 @@ fun BuildAttractionsUI(data: AttractionDetailsResponse?, navController: NavHostC
 }
 
 @Composable
-fun AttractionComposable(attraction: Data) {
+fun AttractionComposable(attraction: Data, navController: NavHostController) {
 
     var clicked by remember { mutableStateOf(false) }
 
@@ -225,11 +210,21 @@ fun AttractionComposable(attraction: Data) {
         modifier = Modifier
             .clickable {
                 clicked = true
+                navController.navigate(
+                    Billing(
+                        attraction.attractionName,
+                        attraction.attractionId
+                    )
+                )
             }
             .padding(10.dp)
             .fillMaxWidth()
             .background(if (clicked) Green40 else Color.White, RoundedCornerShape(12.dp))
-            .border(1.dp, if (clicked) Color.Transparent else Color.LightGray, RoundedCornerShape(12.dp))
+            .border(
+                1.dp,
+                if (clicked) Color.Transparent else Color.LightGray,
+                RoundedCornerShape(12.dp)
+            )
             .padding(30.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -267,6 +262,6 @@ fun AttractionComposable(attraction: Data) {
 private fun DefaultPreview() {
 
 
-    AttractionComposable(Data("1", "Entry Ticket", null))
+    AttractionComposable(Data("1", "Entry Ticket", null), rememberNavController())
 
 }

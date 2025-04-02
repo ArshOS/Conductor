@@ -1,11 +1,8 @@
-package com.park.conductor.presentation.attraction
+package com.park.conductor.presentation.billing
 
-import android.app.Activity
 import android.content.Intent
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,20 +14,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ConfirmationNumber
-import androidx.compose.material.icons.filled.CurrencyRupee
-import androidx.compose.material.icons.filled.Forest
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.outlined.ConfirmationNumber
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,68 +29,67 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
+import androidx.navigation.compose.rememberNavController
 import com.park.conductor.R
-import com.park.conductor.common.components.DottedLine
 import com.park.conductor.common.components.NationalityTag
 import com.park.conductor.common.components.PassengerCounterComposable
 import com.park.conductor.common.utilities.Prefs
 import com.park.conductor.data.remote.api.ApiConstant
 import com.park.conductor.data.remote.api.ApiService
 import com.park.conductor.data.remote.api.ApiState
-import com.park.conductor.data.remote.dto.AttractionDetailsResponse
-import com.park.conductor.data.remote.dto.DashboardResponse
-import com.park.conductor.data.remote.dto.Data
+import com.park.conductor.data.remote.dto.TicketPriceResponse
+import com.park.conductor.ezetap.EzeNativeSampleActivity
+import com.park.conductor.navigation.Dashboard
 import com.park.conductor.navigation.DummyPay
-import com.park.conductor.presentation.MainActivity
+import com.park.conductor.presentation.attraction.TopBarComposable
 import com.park.conductor.ui.theme.Green40
-import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Local
 
 @Composable
-fun AttractionScreenComposable(
+fun BillingScreen(
     paddingValues1: PaddingValues,
     navController: NavHostController,
-    attractionViewModel: AttractionViewModel = hiltViewModel()
+    attractionName: String?,
+    attractionId: String?,
+    billingViewModel: BillingViewModel = hiltViewModel()
 ) {
 
     val param = remember {
-        ApiConstant.getBaseParam()
+        ApiConstant.getBaseParam().apply {
+            put("ticketid", attractionId?.trim()?.toInt() ?: 0)
+        }
     }
 
     val context = LocalContext.current
+    var amount by remember {
+        mutableFloatStateOf(0f)
+    }
 
     LaunchedEffect(Unit) {
 
         if (ApiService.NetworkUtil.isInternetAvailable(context)) {
-            attractionViewModel.getAttractionDetailsResponse(param)
+            billingViewModel.getBillingDetailsResponse(param)
         } else {
             ApiService.NetworkUtil.showNoInternetDialog(context)
         }
     }
 
-    val state by attractionViewModel.attraction.collectAsState()
+    val stateBilling by billingViewModel.billing.collectAsState()
 
     Scaffold(
         topBar = {
@@ -117,43 +105,71 @@ fun AttractionScreenComposable(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                SetUpObserverAttraction(state, navController)
+                Column {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.LightGray)
+                            .padding(20.dp),
+                        text = attractionName.toString(),
+                        textAlign = TextAlign.Center,
+                        color = Color.Black,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    SetUpObserverBilling(stateBilling, navController)
+                }
+
             }
 
+        },
+        bottomBar = {
+//            Row(
+//                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.SpaceBetween,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .background(Green40)
+//                    .padding(all = 20.dp)
+//            ) {
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Text(
+//                        text = "Total",
+//                        style = MaterialTheme.typography.headlineLarge,
+//                        color = Color.Gray,
+//                        fontWeight = FontWeight.Medium
+//                    )
+//                    Spacer(modifier = Modifier.padding(10.dp))
+//                    Text(
+//                        text = "₹$amount",
+//                        color = if (amount == 0f) {
+//                            Color.Gray
+//                        } else Color.White,
+//                        style = MaterialTheme.typography.headlineLarge,
+//                        fontWeight = FontWeight.Bold
+//                    )
+//                }
+//
+//                Icon(
+//                    modifier = Modifier.size(30.dp),
+//                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+//                    contentDescription = null,
+//                    tint = if (amount == 0f) {
+//                        Color.Gray
+//                    } else Color.White,
+//                )
+//
+//            }
         }
     )
 }
 
-@Composable
-fun TopBarComposable(menu: ImageVector, parkName: String?, logoLda: Int) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Black)
-            .padding(all = 10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(imageVector = menu, contentDescription = null, tint = Color.White)
-            Spacer(modifier = Modifier.padding(10.dp))
-            Text(
-                text = parkName.toString(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White
-            )
-        }
-
-        Image(painter = painterResource(logoLda), contentDescription = null)
-
-    }
-}
 
 @Composable
-fun SetUpObserverAttraction(
-    state: ApiState<AttractionDetailsResponse>,
+fun SetUpObserverBilling(
+    state: ApiState<TicketPriceResponse>,
     navController: NavHostController,
 ) {
     when (state) {
@@ -167,17 +183,17 @@ fun SetUpObserverAttraction(
         }
 
         is ApiState.Success -> {
-            BuildAttractionsUI(state.data, navController)
-            Log.d("TAG: ", "Attraction API success")
+            BuildBillingUI(state.data, navController)
+            Log.d("TAG: ", "Billing API success")
         }
 
         is ApiState.Error -> {
 
-            BuildAttractionsUI(null, navController)
+            BuildBillingUI(null, navController)
 
-            Log.d("TAG: ", "Attraction API Failure")
+            Log.d("TAG: ", "Billing API Failure")
 //            BuildApiFailUI(state.message, navController)
-            Log.d("TAG: ", "Attraction API Failure: errorMessage ${state.message}")
+            Log.d("TAG: ", "Billing API Failure: errorMessage ${state.message}")
 
 //            val errorMessage =
 //                (state as ApiState.Error<DashboardResponse>).message ?: "Unknown error occurred"
@@ -199,94 +215,463 @@ fun SetUpObserverAttraction(
 }
 
 @Composable
-fun BuildAttractionsUI(data: AttractionDetailsResponse?, navController: NavHostController) {
+fun BuildBillingUI(data: TicketPriceResponse?, navController: NavHostController) {
 
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxSize()
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-
-        Text(
-            modifier = Modifier.clickable {
-                Prefs.clear()
-//                    navController.navigate(Login)
-
-
-                val activity = context as? Activity
-                activity?.apply {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
-                }
-            },
-            text = "Logout"
-        )
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) {
-            items(data?.data ?: emptyList()) { task ->
-                AttractionComposable(attraction = task)
-            }
-        }
+        BuildCounterComposable(data, navController)
 
     }
 }
 
 @Composable
-fun AttractionComposable(attraction: Data) {
+fun BuildCounterComposable(data: TicketPriceResponse?, navController: NavHostController) {
 
-    var clicked by remember { mutableStateOf(false) }
+    var amount by remember {
+        mutableFloatStateOf(0f)
+    }
+
+    var totalTickerCounter by remember {
+        mutableIntStateOf(0)
+    }
+
+    /**
+     * General counter
+     */
+    var counterGeneral by remember {
+        mutableIntStateOf(0)
+    }
+
+    /**
+     * Counters based on nationality
+     */
+    var counterIndian by remember {
+        mutableIntStateOf(0)
+    }
+    var counterForeigner by remember {
+        mutableIntStateOf(0)
+    }
+
+    /**
+     * Counters based on age
+     */
+    var counterKid by remember {
+        mutableIntStateOf(0)
+    }
+    var counterAdult by remember {
+        mutableIntStateOf(0)
+    }
+    var counterSenior by remember {
+        mutableIntStateOf(0)
+    }
+
+    /**
+     * Counters based on nationality (Indian) and age
+     */
+    var counterIndianKid by remember {
+        mutableIntStateOf(0)
+    }
+    var counterIndianAdult by remember {
+        mutableIntStateOf(0)
+    }
+    var counterIndianSenior by remember {
+        mutableIntStateOf(0)
+    }
+
+    /**
+     * Counters based on nationality (Foreigner) and age
+     */
+    var counterForeignerKid by remember {
+        mutableIntStateOf(0)
+    }
+    var counterForeignerAdult by remember {
+        mutableIntStateOf(0)
+    }
+    var counterForeignerSenior by remember {
+        mutableIntStateOf(0)
+    }
+
+    LaunchedEffect(
+        counterGeneral,
+        counterIndian,
+        counterForeigner,
+        counterKid,
+        counterAdult,
+        counterSenior,
+        counterIndianKid,
+        counterIndianAdult,
+        counterIndianSenior,
+        counterForeignerKid,
+        counterForeignerAdult,
+        counterForeignerSenior
+    ) {
+        totalTickerCounter++
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column {
+            val totalTickets: Int =
+                counterGeneral + counterIndian + counterForeigner + counterKid + counterAdult + counterSenior + counterIndianKid + counterIndianAdult + counterIndianSenior + counterForeignerKid + counterForeignerAdult + counterForeignerSenior
+            val leftTotalCount = data?.maxTicket?.toInt()?.minus(totalTickets) ?: 0
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp)
+            ) {
+                Text(
+                    text = "Left ",
+                    color = if (leftTotalCount > 0) Green40 else Color.Red,
+                    fontWeight = FontWeight.Medium,
+                    fontStyle = FontStyle.Italic
+                )
+                Spacer(modifier = Modifier.padding(2.dp))
+                Text(
+                    modifier = Modifier
+                        .background(Color.LightGray, RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                    text = leftTotalCount.toString(),
+                    color = if (leftTotalCount > 0) Green40 else Color.Red,
+                    fontWeight = if (leftTotalCount > 0) FontWeight.Medium else FontWeight.Bold,
+                    fontStyle = FontStyle.Italic
+                )
+            }
+            when (data?.type) {
+                "1" -> {
+//            "pricing": {
+//                "All": {
+//                "visitor": 100
+//            }
+//            }
+                    NationalityTag(
+                        labels = listOf("Indian", "Foreigner"),
+                        listOf(
+                            painterResource(id = R.drawable.ic_india),
+                            painterResource(id = R.drawable.ic_globe)
+                        )
+                    )
+                    PassengerCounterComposable(
+                        title = "Visitor",
+                        rateInINR = data.pricing.all?.visitor ?: 0f,
+                        count = counterGeneral,
+                        leftTotalCount = leftTotalCount,
+                        onIncrement = {
+                            counterGeneral++
+                            amount += data.pricing.all?.visitor ?: 0f
+                        },
+                        onDecrement = {
+                            counterGeneral--
+                            amount -= data.pricing.all?.visitor ?: 0f
+                        }
+                    )
+                }
+
+                "2" -> {
+//            "pricing": {
+//                "All": {
+//                "adult": 30,
+//                "kid": 20,
+//                "senior": 40
+//            }
+//            }
+                    NationalityTag(
+                        labels = listOf("Indian", "Foreigner"),
+                        listOf(
+                            painterResource(id = R.drawable.ic_india),
+                            painterResource(id = R.drawable.ic_globe)
+                        )
+                    )
+                    PassengerCounterComposable(
+                        title = "Kid",
+                        subtitle = data.ageGroups?.kid,
+                        rateInINR = data.pricing.all?.kid ?: 0f,
+                        count = counterKid,
+                        onIncrement = {
+                            counterKid++
+                            amount += data.pricing.all?.kid ?: 0f
+                        },
+                        onDecrement = {
+                            counterKid--
+                            amount -= data.pricing.all?.kid ?: 0f
+                        },
+                        leftTotalCount = leftTotalCount
+                    )
+                    PassengerCounterComposable(
+                        title = "Adult",
+                        subtitle = data.ageGroups?.adult,
+                        rateInINR = data.pricing.all?.adult ?: 0f,
+                        count = counterAdult,
+                        onIncrement = {
+                            counterAdult++
+                            amount += data.pricing.all?.adult ?: 0f
+                        },
+                        onDecrement = {
+                            counterAdult--
+                            amount -= data.pricing.all?.adult ?: 0f
+                        },
+                        leftTotalCount = leftTotalCount
+                    )
+                    PassengerCounterComposable(
+                        title = "Sr. Citizen",
+                        subtitle = data.ageGroups?.senior,
+                        rateInINR = data.pricing.all?.senior ?: 0f,
+                        count = counterSenior,
+                        onIncrement = {
+                            counterSenior++
+                            amount += data.pricing.all?.senior ?: 0f
+                        },
+                        onDecrement = {
+                            counterSenior--
+                            amount -= data.pricing.all?.senior ?: 0f
+                        },
+                        leftTotalCount = leftTotalCount
+                    )
+                }
+
+                "3" -> {
+//            "pricing": {
+//                "Indian": {
+//                "visitor": 10
+//            },
+//                "Foreigner": {
+//                "visitor": 20
+//            }
+//            }
+                    NationalityTag(
+                        labels = listOf("Indian"),
+                        listOf(painterResource(id = R.drawable.ic_india))
+                    )
+                    PassengerCounterComposable(
+                        title = "Visitor",
+                        rateInINR = data.pricing.indian?.visitor ?: 0f,
+                        count = counterIndian,
+                        onIncrement = {
+                            counterIndian++
+                            amount += data.pricing.indian?.visitor ?: 0f
+                        },
+                        onDecrement = {
+                            counterIndian--
+                            amount -= data.pricing.indian?.visitor ?: 0f
+                        },
+                        leftTotalCount = leftTotalCount
+                    )
+
+                    NationalityTag(
+                        labels = listOf("Foreigner"),
+                        listOf(painterResource(id = R.drawable.ic_globe))
+                    )
+                    PassengerCounterComposable(
+                        title = "Visitor",
+                        rateInINR = data.pricing.foreigner?.visitor ?: 0f,
+                        count = counterForeigner,
+                        onIncrement = {
+                            counterForeigner++
+                            amount += data.pricing.foreigner?.visitor ?: 0f
+                        },
+                        onDecrement = {
+                            counterForeigner--
+                            amount -= data.pricing.foreigner?.visitor ?: 0f
+                        },
+                        leftTotalCount = leftTotalCount
+                    )
+                }
+
+                "4" -> {
+//            pricing": {
+//            "Indian": {
+//                "adult": 50,
+//                "kid": 20,
+//                "senior": 30
+//            },
+//            "Foreigner": {
+//                "adult": 60,
+//                "kid": 40,
+//                "senior": 50
+//            }
+//        }
+                    NationalityTag(
+                        labels = listOf("Indian"),
+                        painterResources = listOf(painterResource(id = R.drawable.ic_india))
+                    )
+                    PassengerCounterComposable(
+                        title = "Kids",
+                        subtitle = data.ageGroups?.kid,
+                        rateInINR = data.pricing.indian?.kid ?: 0f,
+                        count = counterIndianKid,
+                        onIncrement = {
+                            counterIndianKid++
+                            amount += data.pricing.indian?.kid ?: 0f
+                        },
+                        onDecrement = {
+                            counterIndianKid--
+                            amount -= data.pricing.indian?.kid ?: 0f
+                        },
+                        leftTotalCount = leftTotalCount
+                    )
+                    PassengerCounterComposable(
+                        title = "Adults",
+                        subtitle = data.ageGroups?.adult,
+                        rateInINR = data.pricing.indian?.adult ?: 0f,
+                        count = counterIndianAdult,
+                        onIncrement = {
+                            counterIndianAdult++
+                            amount += data.pricing.indian?.adult ?: 0f
+                        },
+                        onDecrement = {
+                            counterIndianAdult--
+                            amount -= data.pricing.indian?.adult ?: 0f
+                        },
+                        leftTotalCount = leftTotalCount
+                    )
+                    PassengerCounterComposable(
+                        title = "Sr. Citizens",
+                        subtitle = data.ageGroups?.senior,
+                        rateInINR = data.pricing.indian?.senior ?: 0f,
+                        count = counterIndianSenior,
+                        onIncrement = {
+                            counterIndianSenior++
+                            amount += data.pricing.indian?.senior ?: 0f
+                        },
+                        onDecrement = {
+                            counterIndianSenior--
+                            amount -= data.pricing.indian?.senior ?: 0f
+                        },
+                        leftTotalCount = leftTotalCount
+                    )
+
+                    NationalityTag(
+                        labels = listOf("Foreigner"),
+                        listOf(painterResource(id = R.drawable.ic_globe))
+                    )
+                    PassengerCounterComposable(
+                        title = "Kids",
+                        subtitle = data.ageGroups?.kid,
+                        rateInINR = data.pricing.foreigner?.kid ?: 0f,
+                        count = counterForeignerKid,
+                        onIncrement = {
+                            counterForeignerKid++
+                            amount += data.pricing.foreigner?.kid ?: 0f
+                        },
+                        onDecrement = {
+                            counterForeignerKid--
+                            amount -= data.pricing.foreigner?.kid ?: 0f
+                        },
+                        leftTotalCount = leftTotalCount
+                    )
+                    PassengerCounterComposable(
+                        title = "Adults",
+                        subtitle = data.ageGroups?.adult,
+                        rateInINR = data.pricing.foreigner?.adult ?: 0f,
+                        count = counterForeignerAdult,
+                        onIncrement = {
+                            counterForeignerAdult++
+                            amount += data.pricing.foreigner?.adult ?: 0f
+                        },
+                        onDecrement = {
+                            counterForeignerAdult--
+                            amount -= data.pricing.foreigner?.adult ?: 0f
+                        },
+                        leftTotalCount = leftTotalCount
+                    )
+                    PassengerCounterComposable(
+                        title = "Sr. Citizens",
+                        subtitle = data.ageGroups?.senior,
+                        rateInINR = data.pricing.foreigner?.senior ?: 0f,
+                        count = counterForeignerSenior,
+                        onIncrement = {
+                            counterForeignerSenior++
+                            amount += data.pricing.foreigner?.senior ?: 0f
+                        },
+                        onDecrement = {
+                            counterForeignerSenior--
+                            amount -= data.pricing.foreigner?.senior ?: 0f
+                        },
+                        leftTotalCount = leftTotalCount
+                    )
+                }
+
+                else -> {
+
+                }
+            }
+        }
+
+        PayNowButtonComposable(amount, navController)
+    }
+
+
+}
+
+@Composable
+private fun PayNowButtonComposable(amount: Float, navController: NavHostController) {
+
+    val context = LocalContext.current
 
     Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
-            .clickable {
-                clicked = true
-            }
-            .padding(10.dp)
+            .padding(all = 20.dp)
             .fillMaxWidth()
-            .background(if (clicked) Green40 else Color.White, RoundedCornerShape(12.dp))
-            .border(1.dp, if (clicked) Color.Transparent else Color.LightGray, RoundedCornerShape(12.dp))
-            .padding(30.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .background(Green40, RoundedCornerShape(12.dp))
+            .padding(all = 20.dp)
+            .clickable(
+                enabled = amount > 0f
+            ) {
+                val intent = Intent(context, EzeNativeSampleActivity::class.java)
+                context.startActivity(intent)
+            }
     ) {
-        if (attraction.attractionIconUrl.isNullOrEmpty()) {
-            Icon(
-                modifier = Modifier
-                    .rotate(135f)
-                    .size(30.dp),
-                imageVector = Icons.Outlined.ConfirmationNumber,
-                contentDescription = null,
-                tint = if (clicked) Color.White else Color.Black
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Total",
+                style = MaterialTheme.typography.headlineLarge,
+                color = if (amount == 0f) Color.Gray else Color.LightGray,
+                fontWeight = if (amount == 0f) FontWeight.Medium else FontWeight.Light
             )
-        } else {
-            AsyncImage(
-                modifier = Modifier.size(30.dp),
-                model = attraction.attractionIconUrl,
-                contentDescription = "Translated description of what the image contains"
+            Spacer(modifier = Modifier.padding(10.dp))
+            Text(
+                text = "₹$amount",
+                color = if (amount == 0f) {
+                    Color.Gray
+                } else Color.White,
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.padding(10.dp))
-
-        Text(
-            text = attraction.attractionName,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = if (clicked) FontWeight.Bold else FontWeight.Medium,
-            color = if (clicked) Color.White else Color.DarkGray
+        Icon(
+            modifier = Modifier.size(30.dp),
+            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+            contentDescription = null,
+            tint = if (amount == 0f) {
+                Color.Gray
+            } else Color.White,
         )
+
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {
 
+    PayNowButtonComposable(100f, rememberNavController())
 
-    AttractionComposable(Data("1", "Entry Ticket", null))
+
+//    AttractionComposable(Data("1", "Entry Ticket", null), rememberNavController())
 
 }

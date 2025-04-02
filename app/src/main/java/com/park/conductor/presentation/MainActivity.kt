@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.ezetap.sdk.EzetapResponse
 import com.park.conductor.ui.theme.ConductorTheme
 
@@ -33,7 +34,10 @@ import dagger.hilt.android.AndroidEntryPoint
 
 import com.ezetap.sdk.EzetapPayApis
 import com.ezetap.sdk.EzetapPayApi
-
+import com.park.conductor.navigation.Attractions
+import com.park.conductor.navigation.Billing
+import com.park.conductor.presentation.attraction.AttractionScreenComposable
+import com.park.conductor.presentation.billing.BillingScreen
 
 
 @AndroidEntryPoint
@@ -67,7 +71,7 @@ class MainActivity : ComponentActivity() {
 
                     NavHost(
                         navController = navController,
-                        startDestination = if (Prefs.getLogin()?.userInfo?.userId != null) Dashboard else Login,
+                        startDestination = if (Prefs.getLogin()?.userInfo?.userId != null) Attractions else Login,
 
                         ) {
 
@@ -75,6 +79,15 @@ class MainActivity : ComponentActivity() {
                             LoginScreen(navController, { username, password ->
                                 setParam(username, password, loginViewModel)
                             }, loginViewModel)
+                        }
+
+                        composable<Attractions> {
+                            AttractionScreenComposable(PaddingValues(), navController)
+                        }
+
+                        composable<Billing> { it ->
+                            val args = it.toRoute<Billing>()
+                            BillingScreen(PaddingValues(), navController, args.attractionName, args.attractionId)
                         }
 
                         composable<Dashboard> {

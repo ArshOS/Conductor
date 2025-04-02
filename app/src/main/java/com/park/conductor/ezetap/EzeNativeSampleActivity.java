@@ -29,6 +29,8 @@ import android.widget.Toast;
 import com.eze.api.EzeAPI;
 import com.ezetap.sdk.EzeConstants;
 import com.park.conductor.R;
+import com.park.conductor.common.utilities.JsonParser;
+import com.park.conductor.common.utilities.QRCodeGenerator;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -717,6 +719,7 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
             if (intent != null && intent.hasExtra("response")) {
                 Toast.makeText(this, intent.getStringExtra("response"), Toast.LENGTH_LONG).show();
                 Log.d("SampleAppLogs", intent.getStringExtra("response"));
+
                 TextView resultView = (TextView) findViewById(R.id.resultView);
                 resultView.setVisibility(View.VISIBLE);
                 resultView.setText(intent.getStringExtra("response"));
@@ -735,6 +738,24 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
                         response = response.getJSONObject("txn");
                         strTxnId = response.getString("txnId");
                         emiID = response.getString("emiId");
+
+                        Log.d("TAG", "strTxnId" + strTxnId + "emiID" + emiID);
+
+
+                            // Example usage in an Activity or Fragment
+                            Bitmap qrCodeBitmap = QRCodeGenerator.generateQRCode(strTxnId, 300, 300);
+
+                            String responseStr = intent.getStringExtra("response");
+                            String status = JsonParser.getStatusFromResponse(responseStr);
+
+                            if (status != null && status.equals("success")) {
+                                Log.d("SampleAppLogs", "Transaction Status: " + status);
+                                printLucknowQR(qrCodeBitmap);
+                            } else {
+                                Log.e("SampleAppLogs", "Failed to parse status from response.");
+                            }
+
+
                     } else if (resultCode == RESULT_CANCELED) {
                         JSONObject response = new JSONObject(intent.getStringExtra("response"));
                         response = response.getJSONObject("error");
@@ -761,6 +782,36 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
             e.printStackTrace();
         }
 
+    }
+
+    private void printLucknowQR(Bitmap qrCodeBitmap) {
+        JSONObject jsonRequest = new JSONObject();
+
+        JSONObject jsonImageObj = new JSONObject();
+
+        try {
+
+            String encodedImageData = getEncoded64ImageStringFromBitmap(qrCodeBitmap);
+
+            // Building Image Object
+
+            jsonImageObj.put("imageData", encodedImageData);
+
+            jsonImageObj.put("imageType", "JPEG");
+
+            jsonImageObj.put("height", "");// optional
+
+            jsonImageObj.put("weight", "");// optional
+
+            jsonRequest.put("image",
+                    jsonImageObj); // Pass this attribute when you have a valid captured signature image
+
+            EzeAPI.printBitmap(this, REQUEST_CODE_PRINT_BITMAP, jsonRequest);
+
+        } catch (JSONException e) {
+
+            e.printStackTrace();
+        }
     }
 
     /**

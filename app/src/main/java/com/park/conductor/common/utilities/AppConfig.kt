@@ -6,6 +6,6 @@ object Flavor {
 } 
 
 object Urls { 
-    const val DevUrl = "https://innobles.com/eventx-himachal/app/dev/v2/"
-    const val Prod = "https://innobles.com/eventx-himachal/app/dev/v2/"
+    const val DevUrl = "https://eticketlucknowparks.com/uat/app/dev/v2/"
+    const val Prod = "https://eticketlucknowparks.com/uat/app/dev/v2/"
 }

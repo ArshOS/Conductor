@@ -5,4 +5,6 @@ object HomeRepository {
 
     suspend fun login(param: HashMap<String, Any>, api: ApiService) = api.login(param)
     suspend fun dashboard(param: HashMap<String, Any>, api: ApiService) = api.dashboard(param)
+    suspend fun attraction(param: HashMap<String, Any>, api: ApiService) = api.attraction(param)
+    suspend fun billing(param: HashMap<String, Any>, api: ApiService) = api.billing(param)
 }

@@ -147,4 +147,10 @@ dependencies {
     implementation(files("libs/ezetapandroidsdk-3.9.aar"))
     implementation("org.apache.cordova:framework:10.0.0")
 
+    //QR
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.zxing:core:3.4.1")
+
+
+
 }
