@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,16 +26,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.ConfirmationNumber
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +66,8 @@ import com.park.conductor.data.remote.dto.Data
 import com.park.conductor.navigation.Billing
 import com.park.conductor.presentation.MainActivity
 import com.park.conductor.ui.theme.Green40
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun AttractionScreenComposable(
@@ -84,29 +93,54 @@ fun AttractionScreenComposable(
 
     val state by attractionViewModel.attraction.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopBarComposable(
-                Icons.Filled.Menu,
-                Prefs.getLogin()?.userInfo?.parkName,
-                R.drawable.logo_lda
-            )
-        },
-        content = { paddingValues ->
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) // Drawer state
+    val coroutineScope = rememberCoroutineScope() // For managing drawer state
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
+                    .fillMaxHeight()
+                    .width(250.dp)
             ) {
-                SetUpObserverAttraction(state, navController)
+                DrawerContent(navController, drawerState)
             }
-
         }
-    )
+    ) {
+
+        Scaffold(
+            topBar = {
+                TopBarComposable(
+                    coroutineScope,
+                    drawerState,
+                    Icons.Filled.Menu,
+                    Prefs.getLogin()?.userInfo?.parkName,
+                    R.drawable.logo_lda_white
+                )
+            },
+            content = { paddingValues ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    SetUpObserverAttraction(state, navController)
+                }
+
+            }
+        )
+    }
 }
 
 @Composable
-fun TopBarComposable(menu: ImageVector, parkName: String?, logoLda: Int) {
+fun TopBarComposable(
+    coroutineScope: CoroutineScope,
+    drawerState: DrawerState,
+    menu: ImageVector,
+    parkName: String?,
+    logoLda: Int
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -118,7 +152,9 @@ fun TopBarComposable(menu: ImageVector, parkName: String?, logoLda: Int) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(imageVector = menu, contentDescription = null, tint = Color.White)
+            Icon(modifier = Modifier.clickable {
+                coroutineScope.launch { drawerState.open() }
+            }, imageVector = menu, contentDescription = null, tint = Color.White)
             Spacer(modifier = Modifier.padding(10.dp))
             Text(
                 text = parkName.toString(),

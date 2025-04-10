@@ -4,17 +4,17 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <application
-        android:allowBackup="true"
         android:name=".common.utilities.App"
+        android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        tools:node="merge"
-        tools:replace="android:allowBackup"
         android:supportsRtl="true"
         android:theme="@style/Theme.Conductor"
+        tools:node="merge"
+        tools:replace="android:allowBackup"
         tools:targetApi="31">
         <activity
             android:name=".presentation.MainActivity"
@@ -51,12 +51,14 @@
             android:theme="@android:style/Theme.DeviceDefault.Light"
             android:windowSoftInputMode="adjustPan" />
 
+        <activity android:name="com.park.conductor.presentation.post_transaction_screens.TransactionResultActivity" />
+
 
         <provider
             android:name="com.ezetap.sdk.EzetapFileProvider"
             android:authorities="${applicationId}.EzetapFileProvider"
             android:exported="false"
-            android:grantUriPermissions="true" >
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />

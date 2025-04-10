@@ -36,8 +36,10 @@ import com.ezetap.sdk.EzetapPayApis
 import com.ezetap.sdk.EzetapPayApi
 import com.park.conductor.navigation.Attractions
 import com.park.conductor.navigation.Billing
+import com.park.conductor.navigation.Redirection
 import com.park.conductor.presentation.attraction.AttractionScreenComposable
 import com.park.conductor.presentation.billing.BillingScreen
+import com.park.conductor.presentation.redirection.RedirectionScreen
 
 
 @AndroidEntryPoint
@@ -88,6 +90,11 @@ class MainActivity : ComponentActivity() {
                         composable<Billing> { it ->
                             val args = it.toRoute<Billing>()
                             BillingScreen(PaddingValues(), navController, args.attractionName, args.attractionId)
+                        }
+
+                        composable<Redirection> { it ->
+                            val args = it.toRoute<Redirection>()
+                            RedirectionScreen(PaddingValues(), navController, args.tickets, args.amount, args.ticketType, args.totalVisitors, args.attractionName, args.attractionId)
                         }
 
                         composable<Dashboard> {

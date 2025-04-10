@@ -6,9 +6,11 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.park.conductor.common.utilities.App
 import com.park.conductor.data.remote.dto.AttractionDetailsResponse
+import com.park.conductor.data.remote.dto.ContinuePaymentResponse
 import com.park.conductor.data.remote.dto.DashboardResponse
 import com.park.conductor.data.remote.dto.LoginResponse
 import com.park.conductor.data.remote.dto.TicketPriceResponse
+import com.park.conductor.data.remote.dto.UpdatePaymentResponse
 import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -16,6 +18,7 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.QueryMap
 import java.util.concurrent.TimeUnit
 
@@ -30,10 +33,14 @@ interface ApiService {
     @GET("pos_user_ticket_price")
     suspend fun billing(@QueryMap param: HashMap<String, Any>): TicketPriceResponse
 
+    @POST("pos_continue_payment")
+    suspend fun continuePayment(@QueryMap param: HashMap<String, Any>): ContinuePaymentResponse
+
+    @POST("pos_update_payment")
+    suspend fun updatePayment(@QueryMap param: HashMap<String, Any>): UpdatePaymentResponse
+
     @GET("tspuser_dashboard")
     suspend fun dashboard(@QueryMap param: HashMap<String, Any>): DashboardResponse
-
-
 
 
 

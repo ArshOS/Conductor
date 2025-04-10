@@ -1,9 +1,9 @@
 package com.park.conductor.ezetap;
 
-import static com.ezetap.sdk.AppConstants.MERCHANT_NAME;
-import static com.park.conductor.ezetap.Setting.API_KEY;
-import static com.park.conductor.ezetap.Setting.APP_MODE;
 import static com.park.conductor.ezetap.Setting.USER_NAME;
+
+import com.park.conductor.common.utilities.CustomerInfo;
+import com.park.conductor.common.utilities.MerchantInfo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -18,7 +18,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,10 +32,10 @@ import com.ezetap.sdk.EzeConstants;
 import com.park.conductor.R;
 import com.park.conductor.common.utilities.JsonParser;
 import com.park.conductor.common.utilities.QRCodeGenerator;
+import com.park.conductor.presentation.post_transaction_screens.TransactionResultActivity;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Objects;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,6 +73,16 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
     private final int REQUEST_CODE_STOP_PAYMENT = 10025;
     private final int REQUEST_CODE_GET_TXN_DETAIL_WITHOUT_STOP = 10026;
 
+    private TextView textViewParkName;
+    private TextView textViewAttractionName;
+    private TextView textViewAmount;
+
+    private String attractionName;
+    private String attractionId;
+    private Float amountToBePaid;
+    private String ticketUniqueId;
+    private int paymentMode;
+
     /**
      * The Base64 Image bitmap string for attach e-signature
      */
@@ -88,9 +99,34 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_nativesample);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//        setContentView(R.layout.activity_nativesample);
+        setContentView(R.layout.activity_payment_options);
         img = (ImageView) findViewById(R.id.imgSign);
         img.buildDrawingCache();
+
+        textViewParkName = findViewById(R.id.tv_park_name);
+        textViewAttractionName = findViewById(R.id.tv_attraction_name);
+        textViewAmount = findViewById(R.id.tv_amount);
+
+        textViewParkName.setText(getIntent().getStringExtra("park_name"));
+        attractionName = getIntent().getStringExtra("attraction_name");
+        textViewAttractionName.setText(attractionName);
+        amountToBePaid = getIntent().getFloatExtra("amount", 0.0f);
+        textViewAmount.setText(String.format("₹%s", amountToBePaid));
+        ticketUniqueId = getIntent().getStringExtra("ticket_unique_id");
+        attractionId = getIntent().getStringExtra("attraction_id");
+
+        Log.d("MAN", "ticketUniqueId " + ticketUniqueId + ", amountToBePaid " + amountToBePaid);
+
+
+//        if (!SessionState.isEzeInitialized) {
+//            doInitializeEzeTap();
+//            doPrepareDeviceEzeTap();
+//            SessionState.isEzeInitialized = true;
+//        }
+
         loadConfigFromPrefs();
     }
 
@@ -110,7 +146,16 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
     public void onClick(View view) {
         int id = view.getId();
 
-        if (id == R.id.btnInitialize) {
+        if (id == R.id.btnUPITxn2) {
+            paymentMode = 3;
+            openPaymentPayloadPopup2(REQUEST_CODE_UPI);
+        } else if (id == R.id.btnSale2) {
+            paymentMode = 2;
+            openPaymentPayloadPopup2(REQUEST_CODE_SALE_TXN);
+        } else if (id == R.id.btnCashTxn2) {
+            paymentMode = 1;
+            openPaymentPayloadPopup2(REQUEST_CODE_CASH_TXN);
+        } else if (id == R.id.btnInitialize) {
             doInitializeEzeTap();
         } else if (id == R.id.btnPrepare) {
             doPrepareDeviceEzeTap();
@@ -742,18 +787,26 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
                         Log.d("TAG", "strTxnId" + strTxnId + "emiID" + emiID);
 
 
-                            // Example usage in an Activity or Fragment
-                            Bitmap qrCodeBitmap = QRCodeGenerator.generateQRCode(strTxnId, 300, 300);
+                        // Example usage in an Activity or Fragment
+                        Bitmap qrCodeBitmap = QRCodeGenerator.generateQRCode(strTxnId, 300, 300);
 
-                            String responseStr = intent.getStringExtra("response");
-                            String status = JsonParser.getStatusFromResponse(responseStr);
+                        String responseStr = intent.getStringExtra("response");
+                        String status = JsonParser.getStatusFromResponse(responseStr);
 
-                            if (status != null && status.equals("success")) {
-                                Log.d("SampleAppLogs", "Transaction Status: " + status);
-                                printLucknowQR(qrCodeBitmap);
-                            } else {
-                                Log.e("SampleAppLogs", "Failed to parse status from response.");
-                            }
+                        if (status != null && status.equals("success")) {
+                            Log.d("SampleAppLogs", "Transaction Status: " + status);
+                            printLucknowQR(qrCodeBitmap);
+                        } else {
+                            Log.e("SampleAppLogs", "Failed to parse status from response.");
+                        }
+
+                            // Start Kotlin Compose Activity
+                            Intent composeIntent = new Intent(this, TransactionResultActivity.class);
+                            composeIntent.putExtra("response", responseStr);
+                            composeIntent.putExtra("attractionId", attractionId);
+                            composeIntent.putExtra("ticket_unique_id", ticketUniqueId);
+                            composeIntent.putExtra("paymentMode", paymentMode);
+                            startActivity(composeIntent);
 
 
                     } else if (resultCode == RESULT_CANCELED) {
@@ -784,7 +837,7 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
 
     }
 
-    private void printLucknowQR(Bitmap qrCodeBitmap) {
+    public void printLucknowQR(Bitmap qrCodeBitmap) {
         JSONObject jsonRequest = new JSONObject();
 
         JSONObject jsonImageObj = new JSONObject();
@@ -871,6 +924,357 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
                     alertDialog.cancel();
                 }
             });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void paymentPayloadHandler(final int REQUEST_CODE) {
+
+        try {
+            Log.d("TAG", "paymentPayloadHandler: try " + REQUEST_CODE);
+            JSONObject jsonRequest = new JSONObject();
+            JSONObject jsonOptionalParams = new JSONObject();
+            JSONObject jsonReferences = new JSONObject();
+            JSONObject jsonCustomer = new JSONObject();
+
+            jsonRequest.put("merchant_phone_number", MerchantInfo.MERCHANT_PHONE_NUMBER);
+            jsonRequest.put("merchant_email", MerchantInfo.MERCHANT_EMAIL);
+
+            // Building Customer Object
+            jsonCustomer.put("name", CustomerInfo.CUSTOMER_NAME);
+            jsonCustomer.put("mobileNo", CustomerInfo.CUSTOMER_PHONE_NUMBER);
+            jsonCustomer.put("email", CustomerInfo.CUSTOMER_EMAIL);
+
+            // Building References Object
+            jsonReferences
+                    .put("reference1", Objects.requireNonNull(getIntent().getStringExtra("ticket_unique_id")).trim());
+
+            jsonOptionalParams.put("amountTip", 0.00);
+            jsonOptionalParams.put("references", jsonReferences);
+            jsonOptionalParams.put("customer", jsonCustomer);
+
+            // Service Fee
+            double serviceFee = -1.0;
+            String paymentBy = null;
+            jsonOptionalParams.put("serviceFee", serviceFee);
+            jsonOptionalParams.put("paymentBy", paymentBy);
+
+            // Building final request object
+            jsonRequest
+                    .put("amount", textViewAmount.getText().toString().trim());
+//            jsonRequest.put("options", jsonOptionalParams);
+
+            InputMethodManager imm = (InputMethodManager) EzeNativeSampleActivity.this
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+//                imm.hideSoftInputFromWindow(emailIdEditText.getWindowToken(), 0);
+
+            switch (REQUEST_CODE) {
+                case REQUEST_CODE_SALE_TXN:
+                    Log.d("TAG", "paymentPayloadHandler: card " + REQUEST_CODE);
+                    jsonRequest.put("mode", "SALE");//Card payment Mode
+                    doSaleTxn(jsonRequest);
+                    break;
+                case REQUEST_CODE_CASH_TXN:
+                    Log.d("TAG", "paymentPayloadHandler: cash " + REQUEST_CODE);
+                    doCashTxn(jsonRequest);
+                    break;
+                case REQUEST_CODE_UPI:
+                    Log.d("TAG", "paymentPayloadHandler: upi " + REQUEST_CODE);
+                    doUPITxn(jsonRequest);
+                    break;
+            }
+        } catch (Exception e) {
+            Log.d("TAG", "paymentPayloadHandler: catch " + REQUEST_CODE);
+            e.printStackTrace();
+        }
+
+    }
+
+    private void openPaymentPayloadPopup2(final int REQUEST_CODE) {
+        try {
+            LayoutInflater layoutInflater = LayoutInflater.from(EzeNativeSampleActivity.this);
+            final View customView = layoutInflater.inflate(R.layout.payment_payload_popup2, null);
+            AlertDialog.Builder editCustomerPopup = new AlertDialog.Builder(
+                    EzeNativeSampleActivity.this);
+            editCustomerPopup.setCancelable(false);
+            editCustomerPopup.setView(customView);
+            final AlertDialog alertDialog = editCustomerPopup.create();
+            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            alertDialog.show();
+
+            Button cancelButton = (Button) customView.findViewById(R.id.cancel_button);
+            cancelButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    alertDialog.cancel();
+                }
+            });
+
+            final EditText customerNameEditText = (EditText) customView
+                    .findViewById(R.id.user_name);
+            final EditText emailIdEditText = (EditText) customView.findViewById(R.id.user_email);
+            final EditText mobileNumberEditText = (EditText) customView
+                    .findViewById(R.id.user_mobile);
+            final EditText orderNumberEditText = (EditText) customView
+                    .findViewById(R.id.order_number);
+            final EditText externalReference2 = (EditText) customView.findViewById(R.id.ref2);
+            final EditText externalReference3 = (EditText) customView.findViewById(R.id.ref3);
+            final EditText externalReferences = (EditText) customView
+                    .findViewById(R.id.text_external_refs);
+            final EditText payableAmountEditText = (EditText) customView
+                    .findViewById(R.id.payable_amount);
+            final EditText cashBackAmountEditText = (EditText) customView
+                    .findViewById(R.id.cashback_amount);
+            final EditText productBrandEditText = (EditText) customView
+                    .findViewById(R.id.product_brand);
+            final EditText productCodeEditText = (EditText) customView
+                    .findViewById(R.id.product_sku);
+            final EditText productSerialEditText = (EditText) customView
+                    .findViewById(R.id.product_serial);
+            final EditText accountLabelEditTet = (EditText) customView.findViewById(R.id.acc_lab);
+            final EditText serviceFeeEditText = (EditText) customView.findViewById(R.id.serv_fee);
+            final EditText paymentByEditText = (EditText) customView.findViewById(R.id.pay_by);
+            final EditText merchantPhonenumberEditText = (EditText) customView
+                    .findViewById(R.id.merchant_phone_number);
+            final EditText IssueType = (EditText) customView.findViewById(R.id.issueType);
+            final EditText IssueInfo = (EditText) customView.findViewById(R.id.issueInfo);
+            final EditText tags = (EditText) customView.findViewById(R.id.tags);
+            final EditText merchantEmailId = (EditText) customView
+                    .findViewById(R.id.merchant_email);
+            final EditText stopPayList = (EditText) customView
+                    .findViewById(R.id.text_stop_pay);
+
+            if (REQUEST_CODE == REQUEST_CODE_SERVICE_REQUEST) {
+                customerNameEditText.setVisibility(View.GONE);
+                emailIdEditText.setVisibility(View.GONE);
+                IssueType.setVisibility(View.VISIBLE);
+                IssueInfo.setVisibility(View.VISIBLE);
+                tags.setVisibility(View.VISIBLE);
+                mobileNumberEditText.setVisibility(View.GONE);
+                orderNumberEditText.setVisibility(View.GONE);
+                payableAmountEditText.setVisibility(View.GONE);
+                cashBackAmountEditText.setVisibility(View.GONE);
+                productBrandEditText.setVisibility(View.GONE);
+                productSerialEditText.setVisibility(View.GONE);
+                accountLabelEditTet.setVisibility(View.GONE);
+                serviceFeeEditText.setVisibility(View.GONE);
+                paymentByEditText.setVisibility(View.GONE);
+                productCodeEditText.setVisibility(View.GONE);
+                externalReference2.setVisibility(View.GONE);
+                externalReference3.setVisibility(View.GONE);
+                externalReferences.setVisibility(View.GONE);
+            }
+            if (REQUEST_CODE == REQUEST_CODE_CASH_BACK_TXN
+                    || REQUEST_CODE == REQUEST_CODE_CASH_AT_POS_TXN
+                    || REQUEST_CODE == REQUEST_CODE_BRAND_EMI
+                    || REQUEST_CODE == REQUEST_CODE_NORMAL_EMI) {
+                serviceFeeEditText.setVisibility(View.GONE);
+                paymentByEditText.setVisibility(View.GONE);
+                accountLabelEditTet.setVisibility(View.GONE);
+            }
+            if (REQUEST_CODE == REQUEST_CODE_CASH_AT_POS_TXN) {
+                payableAmountEditText.setVisibility(View.GONE);
+            }
+
+            if (REQUEST_CODE == REQUEST_CODE_BRAND_EMI || REQUEST_CODE == REQUEST_CODE_PAY) {
+                productBrandEditText.setVisibility(View.VISIBLE);
+                productCodeEditText.setVisibility(View.VISIBLE);
+                productSerialEditText.setVisibility(View.VISIBLE);
+                cashBackAmountEditText.setVisibility(View.GONE);
+            }
+            Button confirmButton = (Button) customView.findViewById(R.id.confirm_button);
+            confirmButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+//                    if (REQUEST_CODE != REQUEST_CODE_GET_TXN_DETAIL && REQUEST_CODE != REQUEST_CODE_STOP_PAYMENT &&
+//                            REQUEST_CODE != REQUEST_CODE_GET_TXN_DETAIL_WITHOUT_STOP) {
+//                        if ((REQUEST_CODE != REQUEST_CODE_SERVICE_REQUEST) && (REQUEST_CODE != REQUEST_CODE_CASH_AT_POS_TXN)) {
+//                            displayToast(mandatoryErrMsg);
+//                            return;
+//                        }
+//                    }
+                    try {
+                        JSONObject jsonRequest = new JSONObject();
+                        JSONObject jsonOptionalParams = new JSONObject();
+                        JSONObject jsonReferences = new JSONObject();
+                        JSONObject jsonCustomer = new JSONObject();
+                        jsonRequest.put("issueType", IssueType.getText().toString().trim());
+                        jsonRequest.put("issueInfo", IssueInfo.getText().toString().trim());
+                        JSONArray tagArray = new JSONArray();
+                        String[] tag = tags.getText().toString().split("\n");
+                        for (String t : tag) {
+                            tagArray.put(t);
+                        }
+                        jsonRequest.put("tags", tagArray);
+                        jsonRequest.put("merchant_phone_number",
+                                "8445395089");
+                        jsonRequest
+                                .put("merchant_email", "arshad.jamal@innobles.com");
+                        // Building Customer Object
+                        jsonCustomer.put("name", "Visitor");
+                        jsonCustomer
+                                .put("mobileNo", "9999999999");
+                        jsonCustomer.put("email", "email@email.com");
+
+                        // Building References Object
+                        jsonReferences
+                                .put("reference1", ticketUniqueId);
+                        jsonReferences
+                                .put("reference2", externalReference2.getText().toString().trim());
+                        jsonReferences
+                                .put("reference3", externalReference3.getText().toString().trim());
+
+                        // Passing Additional References
+                        JSONArray array = new JSONArray();
+                        String[] externalRefs = externalReferences.getText().toString().split("\n");
+                        for (String externalRef : externalRefs) {
+                            array.put(externalRef);
+                        }
+                        jsonReferences.put("additionalReferences", array);
+
+                        /*String[] txnIdArray = stopPayList.getText().toString().split("\n");
+                        ArrayList<String> txnId = new ArrayList<String>(Arrays.asList(txnIdArray));
+                        jsonRequest.put("txnIdArray", txnId);*/
+                        JSONArray txnId = new JSONArray();
+                        String[] txnIdArray = stopPayList.getText().toString().split("\n");
+                        for (String txn : txnIdArray) {
+                            txnId.put(txn);
+                        }
+                        jsonRequest.put("txnIdArray", txnId);
+
+                        // Building Optional params Object
+                        jsonOptionalParams.put("amountCashback",
+                                cashBackAmountEditText.getText().toString() + "");// Cannot
+                        // have
+                        // amount cashback in SALE transaction.
+                        jsonOptionalParams.put("amountTip", 0.00);
+                        jsonOptionalParams.put("references", jsonReferences);
+                        jsonOptionalParams.put("customer", jsonCustomer);
+
+                        // Service Fee
+                        double serviceFee = -1.0;
+                        String paymentBy = null;
+                        if (serviceFeeEditText.getText().toString().length() > 0) {
+                            serviceFee = Double
+                                    .parseDouble(serviceFeeEditText.getText().toString());
+                        }
+                        if (paymentByEditText.getText().toString().length() > 0) {
+                            paymentBy = paymentByEditText.getText().toString();
+                        }
+                        jsonOptionalParams.put("serviceFee", serviceFee);
+                        jsonOptionalParams.put("paymentBy", paymentBy);
+
+                        // Pay to Account
+                        String accountLabel = null;
+                        if (accountLabelEditTet.getText().toString().length() > 0) {
+                            accountLabel = accountLabelEditTet.getText().toString();
+                        }
+                        jsonOptionalParams.put("payToAccount", accountLabel);
+
+                        if (REQUEST_CODE == REQUEST_CODE_BRAND_EMI
+                                || REQUEST_CODE == REQUEST_CODE_PAY) {
+                            JSONObject brandDetails = new JSONObject();
+                            brandDetails
+                                    .put("SKUCode", productCodeEditText.getText().toString().trim());
+                            brandDetails
+                                    .put("brand", productBrandEditText.getText().toString().trim());
+                            brandDetails
+                                    .put("serial", productSerialEditText.getText().toString().trim());
+                            jsonOptionalParams.put("productDetails", brandDetails);
+                        }
+
+                        JSONObject addlData = new JSONObject();
+                        addlData.put("addl1", "addl1");
+                        addlData.put("addl2", "addl2");
+                        addlData.put("addl3", "addl3");
+                        jsonOptionalParams.put("addlData", addlData);
+
+                        JSONObject appData = new JSONObject();
+                        appData.put("app1", "app1");
+                        appData.put("app2", "app2");
+                        appData.put("app3", "app3");
+                        jsonOptionalParams.put("appData", appData);
+
+                        // Building final request object
+                        jsonRequest
+                                .put("amount", amountToBePaid);
+                        jsonRequest.put("options", jsonOptionalParams);
+
+                        InputMethodManager imm = (InputMethodManager) EzeNativeSampleActivity.this
+                                .getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(emailIdEditText.getWindowToken(), 0);
+
+                        switch (REQUEST_CODE) {
+                            case REQUEST_CODE_WALLET_TXN:
+                                doWalletTxn(jsonRequest);
+                                break;
+                            case REQUEST_CODE_CHEQUE_TXN:
+                                // Building Cheque Object
+                                JSONObject jsonCheque = new JSONObject();
+                                jsonCheque.put("chequeNumber", "125441");
+                                jsonCheque.put("bankCode", "TEST0001233");
+                                jsonCheque.put("bankName", "TEST Bank");
+                                jsonCheque.put("bankAccountNo", "1234567890");
+                                jsonCheque.put("chequeDate", "2017-12-10");
+
+                                jsonRequest.put("cheque", jsonCheque);
+
+                                doChequeTxn(jsonRequest);
+                                break;
+                            case REQUEST_CODE_SALE_TXN:
+                                jsonRequest.put("mode", "SALE");//Card payment Mode
+                                doSaleTxn(jsonRequest);
+                                break;
+                            case REQUEST_CODE_CASH_BACK_TXN:
+                                jsonRequest.put("mode", "CASHBACK");//Card payment Mode
+                                doCashbackTxn(jsonRequest);
+                                break;
+                            case REQUEST_CODE_CASH_AT_POS_TXN:
+                                jsonRequest.put("mode", "CASH@POS");//Card payment Mode
+                                doCashAtPosTxn(jsonRequest);
+                                break;
+                            case REQUEST_CODE_CASH_TXN:
+                                doCashTxn(jsonRequest);
+                                break;
+                            case REQUEST_CODE_PAY:
+                                doPay(jsonRequest);
+                                break;
+                            case REQUEST_CODE_UPI:
+                                doUPITxn(jsonRequest);
+                                break;
+                            case REQUEST_CODE_REMOTE_PAY:
+                                doRemotePayTxn(jsonRequest);
+                                break;
+                            case REQUEST_CODE_QR_CODE_PAY:
+                                doQrCodePayTxn(jsonRequest);
+                                break;
+                            case REQUEST_CODE_NORMAL_EMI:
+                                doNormalEMITxn(jsonRequest);
+                                break;
+                            case REQUEST_CODE_BRAND_EMI:
+                                doBrandEMITxn(jsonRequest);
+                                break;
+                            case REQUEST_CODE_SERVICE_REQUEST:
+                                callServiceRequest(jsonRequest);
+                                break;
+                            case REQUEST_CODE_GET_TXN_DETAIL:
+                                doGetTxnDetails(jsonRequest);
+                                break;
+                            case REQUEST_CODE_STOP_PAYMENT:
+                                doStopPayment(jsonRequest);
+                                break;
+                            case REQUEST_CODE_GET_TXN_DETAIL_WITHOUT_STOP:
+                                doGetTxnDetailsWithoutStop(jsonRequest);
+                                break;
+                        }
+                        alertDialog.cancel();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            alertDialog.show();
         } catch (Exception e) {
             e.printStackTrace();
         }
