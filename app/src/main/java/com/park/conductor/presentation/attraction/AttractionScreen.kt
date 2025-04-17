@@ -57,6 +57,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.park.conductor.R
+import com.park.conductor.common.utilities.CustomerInfo
 import com.park.conductor.common.utilities.Prefs
 import com.park.conductor.data.remote.api.ApiConstant
 import com.park.conductor.data.remote.api.ApiService
@@ -65,9 +66,15 @@ import com.park.conductor.data.remote.dto.AttractionDetailsResponse
 import com.park.conductor.data.remote.dto.Data
 import com.park.conductor.navigation.Billing
 import com.park.conductor.presentation.MainActivity
+import com.park.conductor.presentation.post_transaction_screens.printLucknowQR
 import com.park.conductor.ui.theme.Green40
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.park.conductor.common.utilities.generateTicketBitmapsFromJson
+import com.park.conductor.common.utilities.generateTicketFooterBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AttractionScreenComposable(
@@ -223,6 +230,31 @@ fun BuildAttractionsUI(data: AttractionDetailsResponse?, navController: NavHostC
             },
             text = "Logout"
         )
+
+        val coroutineScope = rememberCoroutineScope()
+
+        val ticketFooterBitmap = generateTicketFooterBitmap(context)
+
+        Text(
+            modifier = Modifier.clickable {
+                coroutineScope.launch {
+                    // Offload heavy bitmap generation to background thread
+                    val tickets = withContext(Dispatchers.Default) {
+                        generateTicketBitmapsFromJson(context, CustomerInfo.DUMMY_JSON_1_TICKET)
+                    }
+
+                    tickets.forEachIndexed { _, bitmap ->
+                        printLucknowQR(bitmap, ticketFooterBitmap, context)
+//                        delay(1000L)
+//                        printLucknowQRFooter(ticketFooterBitmap, context)
+                        delay(1500L)
+                    }
+                }
+            },
+            text = "Generate ticket"
+        )
+
+
 
         LazyColumn(
             modifier = Modifier

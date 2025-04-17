@@ -67,11 +67,11 @@ fun DrawerContent(navController: NavHostController, drawerState: DrawerState) {
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )
-            Text(
-                text = Prefs.getLogin()?.userInfo?.userName.toString(),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold
-            )
+//            Text(
+//                text = Prefs.getLogin()?.userInfo?.userName.toString(),
+//                style = MaterialTheme.typography.bodyLarge,
+//                fontWeight = FontWeight.Bold
+//            )
             Spacer(modifier = Modifier.padding(30.dp))
             DrawerItem(label = "My Profile", icon = Icons.Outlined.Person)
             DrawerItemDivider()

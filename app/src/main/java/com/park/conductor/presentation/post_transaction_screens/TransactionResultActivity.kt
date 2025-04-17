@@ -46,6 +46,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eze.api.EzeAPI
 import com.park.conductor.common.utilities.QRCodeGenerator
+import com.park.conductor.common.utilities.TicketBitmapGenerator
+import com.park.conductor.common.utilities.generateStyledTicketBitmap
 import com.park.conductor.common.utilities.generateTicketBitmapsFromJson
 import com.park.conductor.data.remote.api.ApiConstant
 import com.park.conductor.data.remote.api.ApiService
@@ -53,6 +55,7 @@ import com.park.conductor.data.remote.api.ApiState
 import com.park.conductor.data.remote.dto.UpdatePaymentResponse
 import com.park.conductor.ezetap.EzeNativeSampleActivity
 import com.park.conductor.ui.theme.Green40
+import kotlinx.coroutines.Delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -191,32 +194,33 @@ fun PaymentSuccessScreen(
             "    \"status\": true,\n" +
             "    \"message\": \"successfull\",\n" +
             "    \"ticket_unique_id\": \"2567093814\",\n" +
-            "    \"park_name\": \"Dummy Park\",\n" +
-            "    \"attraction_name\": \"Dummy attraction\",\n" +
-            "    \"gst_number\": \"CHJFF67843GHBDF\",\n" +
+            "    \"park_name\": \"DR. BR AMBEDKAR PARK\",\n" +
+            "    \"attraction_name\": \"ENTRY TICKET\",\n" +
+            "    \"gst_number\": \"BDHFGFU345BFH\",\n" +
             "    \"booked_on\": \"10-04-2025 02:53 PM\",\n" +
             "    \"open_time\": \"07:00 AM\",\n" +
             "    \"close_time\": \"11:00 PM\",\n" +
             "    \"payment_mode\": \"Online\",\n" +
             "    \"booked_by\": \"Operator\",\n" +
             "    \"visit_date\": \"10-04-2025\",\n" +
+            "    \"notes\": \"Ticket is non refundable and valid for same business day only.\",\n" +
             "    \"tickets\": [\n" +
             "        {\n" +
-            "            \"visitor_id\": \"2346433\",\n" +
-            "            \"visitor_name\": \"Visitor 1\",\n" +
-            "            \"visitor_type\": \"Visitor\",\n" +
+            "            \"visitor_type\": \"INDAIN-ADULT\",\n" +
+            "            \"visitor_id\": \"12345678\",\n" +
+            "            \"visitor_name\": \"Visitor name\",\n" +
             "            \"amount\": \"₹20\",\n" +
             "            \"qr_data\": \"56748374646\"\n" +
             "        },\n" +
             "        {\n" +
-            "            \"visitor_id\": \"5446782\",\n" +
-            "            \"visitor_name\": \"Visitor 2\",\n" +
-            "            \"visitor_type\": \"Visitor\",\n" +
+            "            \"visitor_type\": \"INDAIN-KID\",\n" +
+            "            \"visitor_id\": \"12345679\",\n" +
+            "            \"visitor_name\": \"Visitor naam\",\n" +
             "            \"amount\": \"₹30\",\n" +
             "            \"qr_data\": \"66748374600\"\n" +
             "        }\n" +
             "    ]\n" +
-            "}"
+            "}\n"
 
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -281,10 +285,15 @@ fun PaymentSuccessScreen(
             onClick = {
 
                 coroutineScope.launch {
-                    val qrTickets = generateTicketBitmapsFromJson(context, dummyJson)
+                    val generator = TicketBitmapGenerator(context)
+                    val bitmaps = generator.generateTicketBitmapsFromJson(dummyJson)
 
-                    qrTickets.forEachIndexed { _, bitmap ->
-                        printLucknowQR(bitmap, context)
+
+//                    val generator = TicketBitmapGenerator.generateTicketBitmapsFromJson(context, dummyJson)
+
+
+                    bitmaps.forEachIndexed { _, bitmap ->
+                        printLucknowQR(bitmap, bitmap, context)
 
                         // Optional delay to allow printer to complete
                         delay(1500L) // 1.5 seconds (adjust based on printer speed)
@@ -355,7 +364,7 @@ fun getEncoded64ImageStringFromBitmap(bitmap: Bitmap): String {
     return Base64.encodeToString(byteFormat, Base64.NO_WRAP)
 }
 
-fun printLucknowQR(qrCodeBitmap: Bitmap, context: Context) {
+fun printLucknowQR(qrCodeBitmap: Bitmap, footerBitmap: Bitmap, context: Context) {
 
     val jsonRequest = JSONObject()
 
@@ -382,9 +391,33 @@ fun printLucknowQR(qrCodeBitmap: Bitmap, context: Context) {
     } catch (e: JSONException) {
         e.printStackTrace()
     }
+
+//    val jsonRequestFooter = JSONObject()
+//
+//    val jsonImageFooterObj = JSONObject()
+
+//    try {
+//        val encodedImageData = getEncoded64ImageStringFromBitmap(footerBitmap)
+//
+//        // Building Image Object
+//        jsonImageFooterObj.put("imageData", encodedImageData)
+//
+//        jsonImageFooterObj.put("imageType", "JPEG")
+//
+//        jsonImageFooterObj.put("height", "") // optional
+//
+//        jsonImageFooterObj.put("weight", "") // optional
+//
+//        jsonRequestFooter.put(
+//            "image",
+//            jsonImageFooterObj
+//        ) // Pass this attribute when you have a valid captured signature image
+//
+//        EzeAPI.printBitmap(context, 10023, jsonRequestFooter)
+//    } catch (e: JSONException) {
+//        e.printStackTrace()
+//    }
 }
-
-
 
 @Preview(showBackground = true)
 @Composable

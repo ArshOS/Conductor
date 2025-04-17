@@ -13,5 +13,8 @@ data class UserInfo(
     @SerializedName("park_name") val parkName: String,
     @SerializedName("user_id") val userId: String,
     @SerializedName("user_name") val userName: String,
-    @SerializedName("user_type") val userType: String
+    @SerializedName("user_type") val userType: String,
+    @SerializedName("login_user_name") val loginUsername: String,
+    val mobile: String,
+    val email: String,
 )
