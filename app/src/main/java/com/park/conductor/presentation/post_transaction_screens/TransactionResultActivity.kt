@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Print
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,10 +49,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eze.api.EzeAPI
+import com.park.conductor.common.utilities.CustomerInfo
 import com.park.conductor.common.utilities.QRCodeGenerator
 import com.park.conductor.common.utilities.TicketBitmapGenerator
 import com.park.conductor.common.utilities.generateStyledTicketBitmap
 import com.park.conductor.common.utilities.generateTicketBitmapsFromJson
+import com.park.conductor.common.utilities.restartApp
 import com.park.conductor.data.remote.api.ApiConstant
 import com.park.conductor.data.remote.api.ApiService
 import com.park.conductor.data.remote.api.ApiState
@@ -72,10 +78,12 @@ import kotlinx.coroutines.delay
 class TransactionResultActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         val responseRZP = intent.getStringExtra("response") ?: ""
+
         val attractionId = intent.getStringExtra("attractionId") ?: ""
         val ticketUniqueId = intent.getStringExtra("ticket_unique_id") ?: ""
-        val paymentMode = intent.getStringExtra("paymentMode") ?: ""
+        val paymentMode = intent.getStringExtra("paymentMode") ?: "4"
 
         var response: JSONObject = JSONObject(responseRZP)
         response = response.getJSONObject("result")
@@ -94,12 +102,14 @@ class TransactionResultActivity : ComponentActivity() {
                 ApiConstant.getBaseParam().apply {
                     put("ticketid", attractionId)
                     put("unique_ticket_id", ticketUniqueId)
-                    put("payment_mode", paymentMode)
+                    put("payment_mode", 2)
                     put("payment_status", 1)
                     put("payable_amount", paymentAmount)
                     put("transaction_id", strTxnId)
                 }
             }
+
+            Log.d("TAG", "Update Params $param")
 
             val context = LocalContext.current
 
@@ -190,38 +200,7 @@ fun PaymentSuccessScreen(
     transactionIdRZP: String
 ) {
 
-    val dummyJson: String = "{\n" +
-            "    \"status\": true,\n" +
-            "    \"message\": \"successfull\",\n" +
-            "    \"ticket_unique_id\": \"2567093814\",\n" +
-            "    \"park_name\": \"DR. BR AMBEDKAR PARK\",\n" +
-            "    \"attraction_name\": \"ENTRY TICKET\",\n" +
-            "    \"gst_number\": \"BDHFGFU345BFH\",\n" +
-            "    \"booked_on\": \"10-04-2025 02:53 PM\",\n" +
-            "    \"open_time\": \"07:00 AM\",\n" +
-            "    \"close_time\": \"11:00 PM\",\n" +
-            "    \"payment_mode\": \"Online\",\n" +
-            "    \"booked_by\": \"Operator\",\n" +
-            "    \"visit_date\": \"10-04-2025\",\n" +
-            "    \"notes\": \"Ticket is non refundable and valid for same business day only.\",\n" +
-            "    \"tickets\": [\n" +
-            "        {\n" +
-            "            \"visitor_type\": \"INDAIN-ADULT\",\n" +
-            "            \"visitor_id\": \"12345678\",\n" +
-            "            \"visitor_name\": \"Visitor name\",\n" +
-            "            \"amount\": \"₹20\",\n" +
-            "            \"qr_data\": \"56748374646\"\n" +
-            "        },\n" +
-            "        {\n" +
-            "            \"visitor_type\": \"INDAIN-KID\",\n" +
-            "            \"visitor_id\": \"12345679\",\n" +
-            "            \"visitor_name\": \"Visitor naam\",\n" +
-            "            \"amount\": \"₹30\",\n" +
-            "            \"qr_data\": \"66748374600\"\n" +
-            "        }\n" +
-            "    ]\n" +
-            "}\n"
-
+    Log.d("TAG", "update payment: $data")
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Main content
@@ -281,24 +260,45 @@ fun PaymentSuccessScreen(
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
 
-        Button(
-            onClick = {
+        Box (
+            modifier = Modifier
+            .fillMaxWidth()
+            .align(Alignment.BottomCenter)
+            .padding(0.dp),
+        ) {
+            Row (
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(
+                    onClick = { restartApp(context) },
+                    modifier = Modifier.weight(1f).background(Color(0XFF0077B5), RoundedCornerShape(0.dp)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF0077B5))
+                ) {
+                    Icon(modifier = Modifier.size(24.dp), imageVector = Icons.Filled.Home, contentDescription = null)
+                    Spacer(Modifier.padding(3.dp))
+                    Text(text = "Home", style = MaterialTheme.typography.titleMedium.copy(color = Color.White))
+                }
+                Button(
+                    onClick = {
 
-                coroutineScope.launch {
-                    val generator = TicketBitmapGenerator(context)
-                    val bitmaps = generator.generateTicketBitmapsFromJson(dummyJson)
+                        coroutineScope.launch {
+                            val generator = TicketBitmapGenerator(context)
+                            val bitmaps =
+                                generator.generateTicketBitmapsFromJson(CustomerInfo.DUMMY_JSON_2_TICKETS)
 
 
 //                    val generator = TicketBitmapGenerator.generateTicketBitmapsFromJson(context, dummyJson)
 
 
-                    bitmaps.forEachIndexed { _, bitmap ->
-                        printLucknowQR(bitmap, bitmap, context)
+                            bitmaps.forEachIndexed { _, bitmap ->
+                                printLucknowQR(bitmap, bitmap, context)
 
-                        // Optional delay to allow printer to complete
-                        delay(1500L) // 1.5 seconds (adjust based on printer speed)
-                    }
-                }
+                                // Optional delay to allow printer to complete
+                                delay(1500L) // 1.5 seconds (adjust based on printer speed)
+                            }
+                        }
 
 //                val qrTickets = generateTicketBitmapsFromJson(context, dummyJson)
 //
@@ -307,23 +307,30 @@ fun PaymentSuccessScreen(
 //                }
 
 
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .height(60.dp)
-                .padding(0.dp)
-                .background(Green40, RoundedCornerShape(0.dp)),
-            colors = ButtonDefaults.buttonColors(containerColor = Green40)
-        ) {
-            Text(
-                text = "Print Tickets",
-                style = MaterialTheme.typography.titleMedium.copy(color = Color.White)
-            )
+                    },
+                    modifier = Modifier.weight(1f)
+                    .background(Green40, RoundedCornerShape(0.dp)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Green40)
+                ) {
+                    Icon(modifier = Modifier.size(24.dp), imageVector = Icons.Filled.Print, contentDescription = null)
+                    Spacer(Modifier.padding(3.dp))
+                    Text(
+                        text = "Print Tickets",
+                        style = MaterialTheme.typography.titleMedium.copy(color = Color.White)
+                    )
+                }
+            }
+
         }
+
+
     }
 }
-
+//.fillMaxWidth()
+//.align(Alignment.BottomCenter)
+//.height(60.dp)
+//.padding(0.dp)
+//.background(Green40, RoundedCornerShape(0.dp))
 
 suspend fun convertPdfUrlToBitmap(context: Context, pdfUrl: String): Bitmap? {
     return withContext(Dispatchers.IO) {
@@ -338,7 +345,8 @@ suspend fun convertPdfUrlToBitmap(context: Context, pdfUrl: String): Bitmap? {
             inputStream.close()
             outputStream.close()
 
-            val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+            val fileDescriptor =
+                ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
             val pdfRenderer = PdfRenderer(fileDescriptor)
 
             val page = pdfRenderer.openPage(0)
@@ -423,11 +431,13 @@ fun printLucknowQR(qrCodeBitmap: Bitmap, footerBitmap: Bitmap, context: Context)
 @Composable
 private fun DefaultPreview() {
 
-//    PaymentSuccessScreen(
-//        transactionId = "TXN123456789"
-//    ) {
-//        // Handle print logic here
-//    }
+    PaymentSuccessScreen(
+        data = UpdatePaymentResponse(
+            "", "", "", "", "", "", "", "", "", "", true, "", listOf(),
+            visit_date = ""
+        ),
+        transactionIdRZP = "TXN123456789"
+    )
 
 }
 

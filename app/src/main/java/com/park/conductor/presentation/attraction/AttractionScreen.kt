@@ -83,6 +83,8 @@ fun AttractionScreenComposable(
     attractionViewModel: AttractionViewModel = hiltViewModel()
 ) {
 
+    Log.d("TAG", "${Prefs.getLogin()?.userInfo}")
+
     val param = remember {
         ApiConstant.getBaseParam()
     }
@@ -228,7 +230,7 @@ fun BuildAttractionsUI(data: AttractionDetailsResponse?, navController: NavHostC
                     finish()
                 }
             },
-            text = "Logout"
+            text = ""
         )
 
         val coroutineScope = rememberCoroutineScope()
@@ -240,7 +242,7 @@ fun BuildAttractionsUI(data: AttractionDetailsResponse?, navController: NavHostC
                 coroutineScope.launch {
                     // Offload heavy bitmap generation to background thread
                     val tickets = withContext(Dispatchers.Default) {
-                        generateTicketBitmapsFromJson(context, CustomerInfo.DUMMY_JSON_1_TICKET)
+                        generateTicketBitmapsFromJson(context, CustomerInfo.DUMMY_JSON_2_TICKETS)
                     }
 
                     tickets.forEachIndexed { _, bitmap ->
@@ -251,7 +253,7 @@ fun BuildAttractionsUI(data: AttractionDetailsResponse?, navController: NavHostC
                     }
                 }
             },
-            text = "Generate ticket"
+            text = ""
         )
 
 

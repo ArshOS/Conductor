@@ -58,8 +58,8 @@ fun RedirectionScreen(
         paramMap["placeid"] = Prefs.getLogin()?.userInfo?.parkId!!.toInt()
     }
 
-    if (ticketType != null) {
-        paramMap["tickettypeid"] = ticketType.toInt()
+    if (attractionId != null) {
+        paramMap["tickettypeid"] = attractionId.toInt()
     }
 
     if (totalVisitors != null) {
@@ -138,6 +138,7 @@ fun SetUpObserverContinuePayment(
 
         is ApiState.Success -> {
             Log.d("TAG: ", "Continue Payment API success")
+            Log.d("TAG: ", "Continue Payment ${state.data}")
             val intent = Intent(context, EzeNativeSampleActivity::class.java)
             intent.putExtra("ticket_unique_id", state.data.ticket_unique_id)
             intent.putExtra("park_name", Prefs.getLogin()?.userInfo?.parkName)

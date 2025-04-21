@@ -2,6 +2,8 @@ package com.park.conductor.presentation.drawer.my_transactions
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material.icons.outlined.ConfirmationNumber
 import androidx.compose.material.icons.outlined.Email
@@ -33,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.traceEventStart
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -48,8 +52,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.park.conductor.R
+import com.park.conductor.common.components.DatePickerWithFormattedDisplay
 import com.park.conductor.common.utilities.Prefs
+import java.util.Calendar
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TransactionsScreen(
     paddingValues1: PaddingValues,
@@ -145,6 +152,7 @@ fun InfoBar(label: String, info: String, icon: ImageVector) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TransactionsComposable() {
 
@@ -159,17 +167,47 @@ fun TransactionsComposable() {
                 .fillMaxWidth()
                 .background(Color.LightGray)
                 .padding(20.dp),
-            text = "Operator Profile",
+            text = "My Transactions",
             textAlign = TextAlign.Center,
             color = Color.Black,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold
         )
+
         Spacer(Modifier.padding(10.dp))
+
+        Box(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            DatePickerWithFormattedDisplay()
+        }
+
+        Row (
+            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Spacer(modifier = Modifier.padding(5.dp))
+            PaymentModeTag("All")
+            PaymentModeTag("UPI")
+            PaymentModeTag("Cash")
+            PaymentModeTag("Card")
+        }
+
 
     }
 }
 
+@Composable
+fun PaymentModeTag(label: String) {
+    Text(
+        modifier = Modifier.padding(horizontal = 5.dp)
+            .border(width = 1.dp, shape = RoundedCornerShape(5.dp), color = Color.Black)
+            .padding(horizontal = 10.dp, vertical = 3.dp),
+        text = label
+    )
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {

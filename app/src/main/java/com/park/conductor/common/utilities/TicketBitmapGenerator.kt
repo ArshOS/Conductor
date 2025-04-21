@@ -218,7 +218,8 @@ class TicketBitmapGenerator(private val context: Context) {
                 "close_time" to root.getString("close_time"),
                 "payment_mode" to root.getString("payment_mode"),
                 "booked_by" to root.getString("booked_by"),
-                "visit_date" to root.getString("visit_date")
+                "visit_date" to root.getString("visit_date"),
+                "notes" to root.getString("notes")
             )
 
             for (i in 0 until tickets.length()) {

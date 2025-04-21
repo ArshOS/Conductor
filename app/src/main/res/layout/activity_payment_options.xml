@@ -40,6 +40,41 @@
                 android:textStyle="bold"
                 tools:text="Attraction Name" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:paddingTop="15dp"
+                android:visibility="gone"
+                android:paddingEnd="5dp"
+                android:gravity="end"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="@android:color/darker_gray"
+                    android:textSize="12sp"
+                    android:textStyle="italic"
+                    android:text="OrderID" />
+
+
+                <TextView
+                    android:id="@+id/tv_order_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:paddingStart="5dp"
+                    android:textColor="@android:color/black"
+                    android:textSize="12sp"
+                    android:textStyle="italic"
+                    tools:text="1234567890" />
+
+            </LinearLayout>
+
+
+
+
             <TextView
                 android:id="@+id/tv_amount"
                 android:layout_width="match_parent"
@@ -49,7 +84,7 @@
                 android:textColor="@android:color/black"
                 android:textSize="30sp"
                 android:textStyle="italic"
-                tools:text="$199" />
+                tools:text="₹199" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -467,14 +502,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="20dp"/>
 
+
             <ImageView
                 android:id="@+id/imgSign"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:visibility="gone"
                 android:contentDescription="eztap"
                 android:src="@drawable/ezenew" />
-
             <TextView
                 android:id="@+id/resultView"
                 android:layout_width="wrap_content"

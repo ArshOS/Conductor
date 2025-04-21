@@ -31,7 +31,9 @@ import com.eze.api.EzeAPI;
 import com.ezetap.sdk.EzeConstants;
 import com.park.conductor.R;
 import com.park.conductor.common.utilities.JsonParser;
+import com.park.conductor.common.utilities.Prefs;
 import com.park.conductor.common.utilities.QRCodeGenerator;
+import com.park.conductor.data.remote.dto.LoginResponse;
 import com.park.conductor.presentation.post_transaction_screens.TransactionResultActivity;
 
 import java.io.ByteArrayOutputStream;
@@ -40,6 +42,12 @@ import java.util.Objects;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.Call;
+import java.io.IOException;
 
 public class EzeNativeSampleActivity extends Activity implements OnClickListener {
 
@@ -76,6 +84,7 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
     private TextView textViewParkName;
     private TextView textViewAttractionName;
     private TextView textViewAmount;
+    private TextView textViewOrderId;
 
     private String attractionName;
     private String attractionId;
@@ -109,6 +118,7 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
         textViewParkName = findViewById(R.id.tv_park_name);
         textViewAttractionName = findViewById(R.id.tv_attraction_name);
         textViewAmount = findViewById(R.id.tv_amount);
+        textViewOrderId = findViewById(R.id.tv_order_id);
 
         textViewParkName.setText(getIntent().getStringExtra("park_name"));
         attractionName = getIntent().getStringExtra("attraction_name");
@@ -116,6 +126,7 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
         amountToBePaid = getIntent().getFloatExtra("amount", 0.0f);
         textViewAmount.setText(String.format("₹%s", amountToBePaid));
         ticketUniqueId = getIntent().getStringExtra("ticket_unique_id");
+        textViewOrderId.setText(String.format("%s", ticketUniqueId));
         attractionId = getIntent().getStringExtra("attraction_id");
 
         Log.d("MAN", "ticketUniqueId " + ticketUniqueId + ", amountToBePaid " + amountToBePaid);
@@ -148,13 +159,13 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
 
         if (id == R.id.btnUPITxn2) {
             paymentMode = 3;
-            openPaymentPayloadPopup2(REQUEST_CODE_UPI);
+            openPaymentPayloadPopup2(REQUEST_CODE_UPI, paymentMode);
         } else if (id == R.id.btnSale2) {
             paymentMode = 2;
-            openPaymentPayloadPopup2(REQUEST_CODE_SALE_TXN);
+            openPaymentPayloadPopup2(REQUEST_CODE_SALE_TXN, paymentMode);
         } else if (id == R.id.btnCashTxn2) {
             paymentMode = 1;
-            openPaymentPayloadPopup2(REQUEST_CODE_CASH_TXN);
+            openPaymentPayloadPopup2(REQUEST_CODE_CASH_TXN, paymentMode);
         } else if (id == R.id.btnInitialize) {
             doInitializeEzeTap();
         } else if (id == R.id.btnPrepare) {
@@ -762,7 +773,7 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
         Log.d("SampleAppLogs", "requestCode = " + requestCode + "resultCode = " + resultCode);
         try {
             if (intent != null && intent.hasExtra("response")) {
-                Toast.makeText(this, intent.getStringExtra("response"), Toast.LENGTH_LONG).show();
+//                Toast.makeText(this, intent.getStringExtra("response"), Toast.LENGTH_LONG).show();
                 Log.d("SampleAppLogs", intent.getStringExtra("response"));
 
                 TextView resultView = (TextView) findViewById(R.id.resultView);
@@ -784,7 +795,7 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
                         strTxnId = response.getString("txnId");
                         emiID = response.getString("emiId");
 
-                        Log.d("TAG", "strTxnId" + strTxnId + "emiID" + emiID);
+                        Log.d("TAG", "SUCCESS requestCode:" + requestCode + ", resultCode: " + resultCode + "intent: " + intent);
 
 
                         // Example usage in an Activity or Fragment
@@ -795,7 +806,7 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
 
                         if (status != null && status.equals("success")) {
                             Log.d("SampleAppLogs", "Transaction Status: " + status);
-                            printLucknowQR(qrCodeBitmap);
+//                            printLucknowQR(qrCodeBitmap);
                         } else {
                             Log.e("SampleAppLogs", "Failed to parse status from response.");
                         }
@@ -814,6 +825,12 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
                         response = response.getJSONObject("error");
                         String errorCode = response.getString("code");
                         String errorMessage = response.getString("message");
+
+                        hitPaymentUpdateAPI(attractionId, ticketUniqueId, amountToBePaid.toString(), "");
+
+                        Log.d("TAG", "FAILED requestCode:" + requestCode + ", resultCode: " + resultCode + "response: " + response);
+                        Toast.makeText(this, "The last transaction was not successful.\nPlease try again.", Toast.LENGTH_LONG).show();
+
                     }
 
                     break;
@@ -836,6 +853,56 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
         }
 
     }
+
+    //API call for update payment
+
+    public void hitPaymentUpdateAPI(String ticketId, String uniqueTicketId, String paymentAmount, String txnId) {
+        OkHttpClient client = new OkHttpClient();
+
+        LoginResponse login = Prefs.INSTANCE.getLogin();
+        assert login != null;
+        String userId = login.getUserInfo().getUserId();
+        String userName = login.getUserInfo().getLoginUsername();
+        String userType = login.getUserInfo().getUserType();
+
+        String url = "https://eticketlucknowparks.com/uat/app/dev/v2/pos_update_payment" +
+                "?payment_mode=2" +
+                "&transaction_id=" + txnId +
+                "&payment_status=2" +
+                "&userType=" + userType +
+                "&unique_ticket_id=" + uniqueTicketId +
+                "&os_type=1" +
+                "&placeid=2" +
+                "&userName=" + userName +
+                "&payable_amount=" + paymentAmount +
+                "&userid=" + userId +
+                "&ticketid=" + ticketId;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        Log.d("TAG", "Java API call URL: " + request);
+
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                Log.e("TAG", "API call failed: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String result = response.body().string();
+                    Log.d("TAG", "Update payment API Success on payment failure Response: " + result);
+                } else {
+                    Log.e("TAG", "Update payment API Fail on payment failure Response: " + response.code());
+                }
+            }
+        });
+    }
+
 
     public void printLucknowQR(Bitmap qrCodeBitmap) {
         JSONObject jsonRequest = new JSONObject();
@@ -991,7 +1058,7 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
 
     }
 
-    private void openPaymentPayloadPopup2(final int REQUEST_CODE) {
+    private void openPaymentPayloadPopup2(final int REQUEST_CODE, int paymentMode) {
         try {
             LayoutInflater layoutInflater = LayoutInflater.from(EzeNativeSampleActivity.this);
             final View customView = layoutInflater.inflate(R.layout.payment_payload_popup2, null);
@@ -1269,6 +1336,7 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
                                 break;
                         }
                         alertDialog.cancel();
+                        Log.d("TAG", "RAZORPAY REQUEST:" + jsonRequest);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
