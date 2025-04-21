@@ -11,3 +11,7 @@ val GreenGrey40 = Color(0xFF5F7058)
 val Lime40 = Color(0xFF89A84B)
 val Red40 = Color(0xFFDA4C4C)
 val Blue40 = Color(0xFF0052B4)
+val UPI40 = Color(0xFFFFA500)
+val Cash40 = Green40
+val Card40 = Color(0xFF0077B5)
+val LinkedInBlue = Color(0xFF0077B5)

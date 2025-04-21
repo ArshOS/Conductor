@@ -12,5 +12,6 @@ data class MyTransaction(
     val booking_date: String,
     val ticket_unique_id: String,
     val visit_date: String,
-    val visitor_count: String
+    val visitor_count: String,
+    val mode_of_payment: String
 )

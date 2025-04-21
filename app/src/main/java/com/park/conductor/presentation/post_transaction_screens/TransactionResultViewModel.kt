@@ -8,6 +8,7 @@ import com.park.conductor.data.remote.api.ApiState
 import com.park.conductor.data.remote.api.HomeRepository
 import com.park.conductor.data.remote.dto.ContinuePaymentResponse
 import com.park.conductor.data.remote.dto.LoginResponse
+import com.park.conductor.data.remote.dto.MyTransactionsResponse
 import com.park.conductor.data.remote.dto.UpdatePaymentResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,5 +40,30 @@ class TransactionResultViewModel: ViewModel() {
             }
         }
     }
+
+    private val _myTransactions : MutableStateFlow<ApiState<MyTransactionsResponse>> = MutableStateFlow(
+        ApiState.loading())
+    val myTransactions: StateFlow<ApiState<MyTransactionsResponse>> = _myTransactions.asStateFlow()
+
+
+    fun getMyTransactionResponse(param : HashMap<String,Any>){
+        viewModelScope.launch {
+            try {
+                val res = HomeRepository.myTransactions(param = param, api = ApiController.getApi())
+
+                if (res.status) {
+                    _myTransactions.value = ApiState.success(res)
+                } else {
+                    Log.d("TAG","In else Condition")
+                    _myTransactions.value = ApiState.Error(res.message.toString())
+                }
+            } catch (e: Exception) {
+                Log.d("TAG","In Catch Condition")
+                _myTransactions.value = ApiState.Error(e.localizedMessage ?: "Something went wrong")
+            }
+        }
+    }
+
+
 
 }

@@ -117,10 +117,11 @@ fun generateTicketBitmapsFromJson(context: Context, json: String): List<Bitmap> 
 
         for (i in 0 until tickets.length()) {
             val ticket = tickets.getJSONObject(i)
-            val visitorId = ticket.getString("visitor_id")
-            val visitorName = ticket.getString("visitor_name")
+//            val visitorId = ticket.getString("visitor_id")
+//            val visitorName = ticket.getString("visitor_name")
             val visitorType = ticket.getString("visitor_type")
             val amount = ticket.getString("amount")
+            val qrData = ticket.getString("qr_data")
 
             val width = 576
             val height = 1500
@@ -224,8 +225,8 @@ fun generateTicketBitmapsFromJson(context: Context, json: String): List<Bitmap> 
 
             // QR Code
             val qrBitmap = generateQRCode(
-                text = ticketUniqueId,
-                labelText = "",
+                text = qrData,
+                labelText = qrData.toString(),
                 width = 500,
                 height = 500
             )

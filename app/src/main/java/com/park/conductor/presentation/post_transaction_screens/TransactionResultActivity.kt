@@ -49,11 +49,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eze.api.EzeAPI
+import com.google.gson.Gson
 import com.park.conductor.common.utilities.CustomerInfo
 import com.park.conductor.common.utilities.QRCodeGenerator
 import com.park.conductor.common.utilities.TicketBitmapGenerator
 import com.park.conductor.common.utilities.generateStyledTicketBitmap
 import com.park.conductor.common.utilities.generateTicketBitmapsFromJson
+import com.park.conductor.common.utilities.generateTicketFooterBitmap
 import com.park.conductor.common.utilities.restartApp
 import com.park.conductor.data.remote.api.ApiConstant
 import com.park.conductor.data.remote.api.ApiService
@@ -260,6 +262,8 @@ fun PaymentSuccessScreen(
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
 
+        val ticketFooterBitmap = generateTicketFooterBitmap(context)
+
         Box (
             modifier = Modifier
             .fillMaxWidth()
@@ -273,26 +277,43 @@ fun PaymentSuccessScreen(
             ) {
                 Button(
                     onClick = { restartApp(context) },
-                    modifier = Modifier.weight(1f).background(Color(0XFF0077B5), RoundedCornerShape(0.dp)),
+                    modifier = Modifier.weight(1f).background(Color(0XFF0077B5), RoundedCornerShape(0.dp)).padding(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF0077B5))
                 ) {
-                    Icon(modifier = Modifier.size(24.dp), imageVector = Icons.Filled.Home, contentDescription = null)
+                    Icon(modifier = Modifier.size(20.dp), imageVector = Icons.Filled.Home, contentDescription = null)
                     Spacer(Modifier.padding(3.dp))
-                    Text(text = "Home", style = MaterialTheme.typography.titleMedium.copy(color = Color.White))
+                    Text(text = "Home", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White))
                 }
                 Button(
                     onClick = {
 
                         coroutineScope.launch {
-                            val generator = TicketBitmapGenerator(context)
-                            val bitmaps =
-                                generator.generateTicketBitmapsFromJson(CustomerInfo.DUMMY_JSON_2_TICKETS)
+
+
+                            // Offload heavy bitmap generation to background thread
+                            val tickets = withContext(Dispatchers.Default) {
+                                generateTicketBitmapsFromJson(context, Gson().toJson(data))
+                            }
+
+                            tickets.forEachIndexed { _, bitmap ->
+                                printLucknowQR(bitmap, ticketFooterBitmap, context)
+//                        delay(1000L)
+//                        printLucknowQRFooter(ticketFooterBitmap, context)
+                                delay(1500L)
+                            }
+
+
+//                            val generator = TicketBitmapGenerator(context)
+//                            val bitmaps =
+//                                generator.generateTicketBitmapsFromJson(data.toString())
+
+                            Log.d("TAG", "generateTicketBitmapsFromJson: ${Gson().toJson(data)}")
 
 
 //                    val generator = TicketBitmapGenerator.generateTicketBitmapsFromJson(context, dummyJson)
 
 
-                            bitmaps.forEachIndexed { _, bitmap ->
+                            tickets.forEachIndexed { _, bitmap ->
                                 printLucknowQR(bitmap, bitmap, context)
 
                                 // Optional delay to allow printer to complete
@@ -309,14 +330,14 @@ fun PaymentSuccessScreen(
 
                     },
                     modifier = Modifier.weight(1f)
-                    .background(Green40, RoundedCornerShape(0.dp)),
+                    .background(Green40, RoundedCornerShape(0.dp)).padding(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Green40)
                 ) {
-                    Icon(modifier = Modifier.size(24.dp), imageVector = Icons.Filled.Print, contentDescription = null)
+                    Icon(modifier = Modifier.size(20.dp), imageVector = Icons.Filled.Print, contentDescription = null)
                     Spacer(Modifier.padding(3.dp))
                     Text(
                         text = "Print Tickets",
-                        style = MaterialTheme.typography.titleMedium.copy(color = Color.White)
+                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
                     )
                 }
             }

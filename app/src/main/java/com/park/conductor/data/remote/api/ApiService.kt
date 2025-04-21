@@ -9,6 +9,7 @@ import com.park.conductor.data.remote.dto.AttractionDetailsResponse
 import com.park.conductor.data.remote.dto.ContinuePaymentResponse
 import com.park.conductor.data.remote.dto.DashboardResponse
 import com.park.conductor.data.remote.dto.LoginResponse
+import com.park.conductor.data.remote.dto.MyTransactionsResponse
 import com.park.conductor.data.remote.dto.TicketPriceResponse
 import com.park.conductor.data.remote.dto.UpdatePaymentResponse
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -38,6 +39,9 @@ interface ApiService {
 
     @POST("pos_update_payment")
     suspend fun updatePayment(@QueryMap param: HashMap<String, Any>): UpdatePaymentResponse
+
+    @GET("pos_my_transactions")
+    suspend fun myTransactions(@QueryMap param: HashMap<String, Any>): MyTransactionsResponse
 
     @GET("tspuser_dashboard")
     suspend fun dashboard(@QueryMap param: HashMap<String, Any>): DashboardResponse

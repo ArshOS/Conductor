@@ -1,8 +1,7 @@
 package com.park.conductor.presentation.drawer.my_transactions
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,31 +15,28 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Call
-import androidx.compose.material.icons.outlined.ConfirmationNumber
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.VerifiedUser
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.traceEventStart
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -49,20 +45,69 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
+import androidx.navigation.compose.rememberNavController
 import com.park.conductor.R
 import com.park.conductor.common.components.DatePickerWithFormattedDisplay
+import com.park.conductor.common.components.TransactionCardComposable
 import com.park.conductor.common.utilities.Prefs
-import java.util.Calendar
+import com.park.conductor.common.utilities.getFormattedDate
+import com.park.conductor.data.remote.api.ApiConstant
+import com.park.conductor.data.remote.api.ApiService
+import com.park.conductor.data.remote.api.ApiState
+import com.park.conductor.data.remote.dto.MyTransactionsResponse
+import com.park.conductor.presentation.post_transaction_screens.TransactionResultViewModel
+import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TransactionsScreen(
     paddingValues1: PaddingValues,
     navController: NavHostController,
+    transactionResultViewModel: TransactionResultViewModel = hiltViewModel()
 ) {
 
+//    userid, os_type, type, date
+//
+//    type: card, upi, cash, all
+//    all -> if all payment
+//    card-> if card tab selected
+//    upi-> if UPI is selected
+//    cash-> if cash tab is selected
+//
+//    date: selected date in (dd-mm-YYYY) format
+//    by default current date would be selected
+
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+
+    val formatedDate = getFormattedDate(
+        today = false,
+        format1 = "dd MMMM yyyy, EEEE",
+        format2 = "dd-MM-yyyy",
+        dateString = selectedDate.toString()
+    )
+
+    val param = remember {
+        ApiConstant.getBaseParam().apply {
+            put("type", "all")
+            put("date", formatedDate)
+        }
+    }
+
+    Log.d("TAG", "Update Params $param")
+
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        if (ApiService.NetworkUtil.isInternetAvailable(context)) {
+            transactionResultViewModel.getMyTransactionResponse(param)
+        } else {
+            ApiService.NetworkUtil.showNoInternetDialog(context)
+        }
+    }
+
+    val stateMyTransactions by transactionResultViewModel.myTransactions.collectAsState()
 
     Scaffold(
         topBar = {
@@ -78,12 +123,63 @@ fun TransactionsScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                TransactionsComposable()
+                TransactionsComposable(
+                    state = stateMyTransactions,
+                    navController = navController,
+                    selectedDate = selectedDate,
+                    onDateChange = { selectedDate = it }
+                )
+
             }
 
         }
     )
 
+}
+
+
+@Composable
+fun SetUpObserverMyTransactions(
+    state: ApiState<MyTransactionsResponse>,
+    navController: NavHostController,
+) {
+    when (state) {
+        is ApiState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        is ApiState.Success -> {
+            BuildMyTransactionsListUI(state.data, navController)
+            Log.d("TAG: ", "Attraction API success")
+        }
+
+        is ApiState.Error -> {
+
+            BuildMyTransactionsListUI(null, navController)
+
+            Log.d("TAG: ", "Attraction API Failure")
+//            BuildApiFailUI(state.message, navController)
+            Log.d("TAG: ", "Attraction API Failure: errorMessage ${state.message}")
+
+        }
+    }
+}
+
+@Composable
+fun BuildMyTransactionsListUI(data: MyTransactionsResponse?, navController: NavHostController) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        items(data?.my_transactions ?: emptyList()) { transaction ->
+            TransactionCardComposable(transaction, navController)
+        }
+    }
 }
 
 @Composable
@@ -154,9 +250,15 @@ fun InfoBar(label: String, info: String, icon: ImageVector) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TransactionsComposable() {
+fun TransactionsComposable(
+    selectedDate: LocalDate,
+    onDateChange: (LocalDate) -> Unit,
+    state: ApiState<MyTransactionsResponse>,
+    navController: NavHostController
+) {
 
     val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -179,10 +281,15 @@ fun TransactionsComposable() {
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
-            DatePickerWithFormattedDisplay()
+            DatePickerWithFormattedDisplay(
+                selectedDate = selectedDate,
+                onDateChange = onDateChange
+            )
         }
 
-        Row (
+        Spacer(Modifier.height(5.dp))
+
+        Row(
             horizontalArrangement = Arrangement.Start,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -193,14 +300,15 @@ fun TransactionsComposable() {
             PaymentModeTag("Card")
         }
 
-
+        SetUpObserverMyTransactions(state, navController)
     }
 }
 
 @Composable
 fun PaymentModeTag(label: String) {
     Text(
-        modifier = Modifier.padding(horizontal = 5.dp)
+        modifier = Modifier
+            .padding(horizontal = 5.dp)
             .border(width = 1.dp, shape = RoundedCornerShape(5.dp), color = Color.Black)
             .padding(horizontal = 10.dp, vertical = 3.dp),
         text = label
@@ -211,6 +319,8 @@ fun PaymentModeTag(label: String) {
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {
-//    DeviceProfileScreen(PaddingValues(), rememberNavController())
-    TransactionsComposable()
+
+//    val transactionResultViewModel = TransactionResultViewModel()
+//
+//    TransactionsComposable(LocalDate.now(), {}, ApiState<MyTransactionsResponse>, rememberNavController())
 }
