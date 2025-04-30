@@ -14,18 +14,14 @@ import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 
 
-import android.graphics.*
 import android.graphics.BitmapFactory
 
-import android.graphics.*
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -33,8 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.set
-import androidx.navigation.compose.rememberNavController
-import com.park.conductor.presentation.attraction.DrawerContent
 import androidx.core.graphics.withTranslation
 import com.google.zxing.EncodeHintType
 
@@ -372,8 +366,8 @@ class TicketBitmapGenerator(private val context: Context) {
         canvas.drawText("Powered by", width - 70f, y.toFloat(), paint)
         y += 20
         try {
-            val devLogo = BitmapFactory.decodeResource(context.resources, R.drawable.logo_innobles) //Inno logo
-            val bankLogo = BitmapFactory.decodeResource(context.resources, R.drawable.logo_hdfc) // HDFC logo
+            val devLogo = BitmapFactory.decodeResource(context.resources, R.drawable.logo_innobles_0) //Inno logo
+            val bankLogo = BitmapFactory.decodeResource(context.resources, R.drawable.logo_hdfc_0) // HDFC logo
             val devScaled = devLogo.scale(250, 42)
             val bankScaled = bankLogo.scale(250, 60)
             canvas.drawBitmap(devScaled, 10f, y.toFloat(), null)

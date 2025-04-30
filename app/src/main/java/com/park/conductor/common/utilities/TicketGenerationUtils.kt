@@ -33,9 +33,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-fun generateTicketFooterBitmap(context: Context): Bitmap {
+fun generateTicketFooterBitmap(context: Context, notes: String?): Bitmap {
     val width = 576
-    val height = 150
+    val height = 300
 
     val bitmap = createBitmap(width, height)
     val canvas = Canvas(bitmap)
@@ -68,9 +68,17 @@ fun generateTicketFooterBitmap(context: Context): Bitmap {
     var y = 40
     val lineSpacing = 35
 
-//     Footer Logos
     paint.textSize = 20f
     paint.typeface = Typeface.DEFAULT
+
+    // Notes
+    if (!notes.isNullOrEmpty()) {
+        canvas.drawText(notes, width / 2f, y.toFloat(), paint); y += 50
+    }
+
+    y += 20
+
+    //  Footer Logos
     canvas.drawText("Developed by", width / 10f, y.toFloat(), paint)
     canvas.drawText("Powered by", width - 70f, y.toFloat(), paint)
     y += 20
@@ -79,16 +87,16 @@ fun generateTicketFooterBitmap(context: Context): Bitmap {
             BitmapFactory.decodeResource(context.resources, R.drawable.logo_innobles) //Inno logo
         val bankLogo =
             BitmapFactory.decodeResource(context.resources, R.drawable.logo_hdfc) // HDFC logo
-        val devScaled = devLogo.scale(250, 42)
-        val bankScaled = bankLogo.scale(250, 60)
+        val devScaled = devLogo.scale(280, 50)
+        val bankScaled = bankLogo.scale(280, 70)
         canvas.drawBitmap(devScaled, 10f, y.toFloat(), null)
-        canvas.drawBitmap(bankScaled, width - 260f, y.toFloat(), null)
+        canvas.drawBitmap(bankScaled, width - 280f, y.toFloat(), null)
     } catch (e: Exception) {
         Log.w("TicketBitmapGenerator", "Footer logos not found")
     }
 
     // Footer line
-    y += 60
+    y += 150
     canvas.drawText("========= THANK YOU =========", width / 2f, y.toFloat(), paintHeading)
 
     return bitmap
@@ -113,7 +121,7 @@ fun generateTicketBitmapsFromJson(context: Context, json: String): List<Bitmap> 
         val bookedBy = root.getString("booked_by")
         val visitDate = root.getString("visit_date")
         val ticketUniqueId = root.getString("ticket_unique_id")
-        val notes = root.getString("notes")
+//        val notes = root.getString("notes")
 
         for (i in 0 until tickets.length()) {
             val ticket = tickets.getJSONObject(i)
@@ -124,7 +132,7 @@ fun generateTicketBitmapsFromJson(context: Context, json: String): List<Bitmap> 
             val qrData = ticket.getString("qr_data")
 
             val width = 576
-            val height = 1500
+            val height = 1250
 
 
             val bitmap = createBitmap(width, height)
@@ -236,12 +244,12 @@ fun generateTicketBitmapsFromJson(context: Context, json: String): List<Bitmap> 
                 y += it.height + 20
             }
 
-            canvas.drawText(
-                "Notes",
-                width / 2f,
-                y.toFloat(),
-                paintSmall
-            ); y += lineSpacing
+//            canvas.drawText(
+//                "Ticket is non refundable and valid for same business day.",
+//                width / 2f,
+//                y.toFloat(),
+//                paintSmall
+//            ); y += lineSpacing
 
             // Footer Logos
 //            paint.textSize = 20f
@@ -522,9 +530,9 @@ fun generateStyledTicket2(context: Context, data: JSONObject): Bitmap {
     y += 20
     try {
         val devLogo =
-            BitmapFactory.decodeResource(context.resources, R.drawable.logo_innobles) //Inno logo
+            BitmapFactory.decodeResource(context.resources, R.drawable.logo_innobles_0) //Inno logo
         val bankLogo =
-            BitmapFactory.decodeResource(context.resources, R.drawable.logo_hdfc) // HDFC logo
+            BitmapFactory.decodeResource(context.resources, R.drawable.logo_hdfc_0) // HDFC logo
         val devScaled = devLogo.scale(200, 38)
         val bankScaled = bankLogo.scale(200, 50)
         canvas.drawBitmap(devScaled, 10f, y.toFloat(), null)
@@ -746,6 +754,10 @@ private fun TicketPreview() {
     val bitmap = remember {
 //        TicketBitmapGenerator(context).generateStyledTicket(json)
         generateTicketBitmapsFromJson(context, jsonStr)
+//        generateTicketFooterBitmap(context, "Ticket is non refundable and valid for same business day only.")
     }
     TicketBitmapView(bitmap = bitmap[0])
+//    TicketBitmapView(bitmap = bitmap)
+
+
 }

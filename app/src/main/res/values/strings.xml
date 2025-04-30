@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Conductor</string>
+    <string name="init_message">The device will be automatically initialized and prepared each time the app is launched. These buttons are only for manually forcing re-initialization.</string>
 </resources>

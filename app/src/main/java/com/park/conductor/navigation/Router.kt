@@ -25,6 +25,12 @@ data class Redirection(
 )
 
 @Serializable
+object DeviceProfile
+
+@Serializable
+object MyTransactions
+
+@Serializable
 object Dashboard
 
 @Serializable

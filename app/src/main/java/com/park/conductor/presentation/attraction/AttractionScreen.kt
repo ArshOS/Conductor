@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -59,6 +60,8 @@ import coil.compose.AsyncImage
 import com.park.conductor.R
 import com.park.conductor.common.utilities.CustomerInfo
 import com.park.conductor.common.utilities.Prefs
+import com.park.conductor.common.utilities.generateTicketBitmapsFromJson
+import com.park.conductor.common.utilities.generateTicketFooterBitmap
 import com.park.conductor.data.remote.api.ApiConstant
 import com.park.conductor.data.remote.api.ApiService
 import com.park.conductor.data.remote.api.ApiState
@@ -69,12 +72,11 @@ import com.park.conductor.presentation.MainActivity
 import com.park.conductor.presentation.post_transaction_screens.printLucknowQR
 import com.park.conductor.ui.theme.Green40
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import com.park.conductor.common.utilities.generateTicketBitmapsFromJson
-import com.park.conductor.common.utilities.generateTicketFooterBitmap
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 @Composable
 fun AttractionScreenComposable(
@@ -82,14 +84,13 @@ fun AttractionScreenComposable(
     navController: NavHostController,
     attractionViewModel: AttractionViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
 
     Log.d("TAG", "${Prefs.getLogin()?.userInfo}")
 
     val param = remember {
         ApiConstant.getBaseParam()
     }
-
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
 
@@ -171,7 +172,11 @@ fun TopBarComposable(
                 color = Color.White
             )
         }
-        Image(painter = painterResource(logoLda), contentDescription = null)
+        Image(
+            modifier = Modifier.size(50.dp),
+            painter = painterResource(logoLda),
+            contentDescription = null
+        )
 
     }
 }
@@ -235,7 +240,10 @@ fun BuildAttractionsUI(data: AttractionDetailsResponse?, navController: NavHostC
 
         val coroutineScope = rememberCoroutineScope()
 
-        val ticketFooterBitmap = generateTicketFooterBitmap(context)
+        val ticketFooterBitmap = generateTicketFooterBitmap(
+            context,
+            "Ticket is non refundable and valid for same business day only."
+        )
 
         Text(
             modifier = Modifier.clickable {
@@ -298,7 +306,21 @@ fun AttractionComposable(attraction: Data, navController: NavHostController) {
             .padding(30.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (attraction.attractionIconUrl.isNullOrEmpty()) {
+        if (attraction.attractionName.trim().lowercase(Locale.ROOT) == "breakfast") {
+            Image(
+                painter = painterResource(id = R.drawable.ic_breakfast),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(40.dp)
+            )
+        } else if (attraction.attractionName.trim().lowercase(Locale.ROOT) == "lunch") {
+            Image(
+                painter = painterResource(id = R.drawable.ic_lunch),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(40.dp)
+            )
+        } else if (attraction.attractionIconUrl.isNullOrEmpty()) {
             Icon(
                 modifier = Modifier
                     .rotate(135f)
@@ -318,7 +340,11 @@ fun AttractionComposable(attraction: Data, navController: NavHostController) {
         Spacer(modifier = Modifier.padding(10.dp))
 
         Text(
-            text = attraction.attractionName,
+            text = if (attraction.attractionName.trim()
+                    .lowercase(Locale.ROOT) == "breakfast"
+            ) "Breakfast - ₹10" else if (attraction.attractionName.trim()
+                    .lowercase(Locale.ROOT) == "lunch"
+            ) "Lunch - ₹10" else attraction.attractionName,
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = if (clicked) FontWeight.Bold else FontWeight.Medium,
             color = if (clicked) Color.White else Color.DarkGray

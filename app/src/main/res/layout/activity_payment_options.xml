@@ -15,18 +15,44 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tv_park_name"
+<!--            <TextView-->
+<!--                android:id="@+id/tv_park_name"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:background="@color/black"-->
+<!--                android:drawableEnd="@drawable/logo_lda_white"-->
+<!--                android:gravity="center_vertical"-->
+<!--                android:padding="12dp"-->
+<!--                android:textColor="@color/white"-->
+<!--                android:textSize="16sp"-->
+<!--                android:textStyle="normal"-->
+<!--                tools:text="Park Name" />-->
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/black"
-                android:drawableEnd="@drawable/logo_lda_white"
                 android:gravity="center_vertical"
-                android:padding="12dp"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:textStyle="normal"
-                tools:text="Park Name" />
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <TextView
+                    android:id="@+id/tv_park_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="normal"
+                    tools:text="Park Name" />
+
+                <ImageView
+                    android:id="@+id/iv_logo"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/logo_lda_white" />
+            </LinearLayout>
+
 
             <TextView
                 android:id="@+id/tv_attraction_name"
@@ -42,21 +68,21 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
                 android:orientation="horizontal"
                 android:paddingTop="15dp"
-                android:visibility="gone"
                 android:paddingEnd="5dp"
-                android:gravity="end"
-                android:layout_height="wrap_content">
+                android:visibility="gone">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
+                    android:text="OrderID"
                     android:textColor="@android:color/darker_gray"
                     android:textSize="12sp"
-                    android:textStyle="italic"
-                    android:text="OrderID" />
+                    android:textStyle="italic" />
 
 
                 <TextView
@@ -73,8 +99,6 @@
             </LinearLayout>
 
 
-
-
             <TextView
                 android:id="@+id/tv_amount"
                 android:layout_width="match_parent"
@@ -83,40 +107,8 @@
                 android:paddingTop="15dp"
                 android:textColor="@android:color/black"
                 android:textSize="30sp"
-                android:textStyle="italic"
+                android:textStyle="italic|bold"
                 tools:text="₹199" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginHorizontal="20dp"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnInitialize"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/round_corner_border_blue"
-                    android:elevation="2dp"
-                    android:onClick="onClick"
-                    android:text="Initialize"
-                    android:textColor="#0077B5" />
-
-                <Button
-                    android:id="@+id/btnPrepare"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/round_corner_border_green"
-                    android:elevation="2dp"
-                    android:onClick="onClick"
-                    android:text="Prepare Device"
-                    android:textColor="#407E47" />
-            </LinearLayout>
 
             <Button
                 android:id="@+id/btnUPITxn2"
@@ -177,6 +169,48 @@
                 android:textAllCaps="false"
                 android:textColor="@android:color/black"
                 android:textSize="25sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnInitialize"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/round_corner_border_blue"
+                    android:elevation="2dp"
+                    android:onClick="onClick"
+                    android:text="Initialize"
+                    android:textColor="#0077B5" />
+
+                <Button
+                    android:id="@+id/btnPrepare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/round_corner_border_green"
+                    android:elevation="2dp"
+                    android:onClick="onClick"
+                    android:text="Prepare Device"
+                    android:textColor="#407E47" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="25dp"
+                android:text="@string/init_message"
+                android:textSize="12sp"
+                android:textAlignment="viewStart"
+                android:textColor="@android:color/holo_red_dark"
+                android:textStyle="bold" />
 
             <!--            <Button-->
             <!--                android:id="@+id/btnInitialize"-->
@@ -500,7 +534,7 @@
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="20dp"/>
+                android:layout_height="20dp" />
 
 
             <ImageView
@@ -508,9 +542,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:visibility="gone"
                 android:contentDescription="eztap"
-                android:src="@drawable/ezenew" />
+                android:src="@drawable/ezenew"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/resultView"
                 android:layout_width="wrap_content"

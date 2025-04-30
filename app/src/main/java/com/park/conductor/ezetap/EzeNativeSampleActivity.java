@@ -33,6 +33,7 @@ import com.park.conductor.R;
 import com.park.conductor.common.utilities.JsonParser;
 import com.park.conductor.common.utilities.Prefs;
 import com.park.conductor.common.utilities.QRCodeGenerator;
+import com.park.conductor.common.utilities.SessionState;
 import com.park.conductor.data.remote.dto.LoginResponse;
 import com.park.conductor.presentation.post_transaction_screens.TransactionResultActivity;
 
@@ -132,11 +133,10 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
         Log.d("MAN", "ticketUniqueId " + ticketUniqueId + ", amountToBePaid " + amountToBePaid);
 
 
-//        if (!SessionState.isEzeInitialized) {
-//            doInitializeEzeTap();
-//            doPrepareDeviceEzeTap();
-//            SessionState.isEzeInitialized = true;
-//        }
+        if (!SessionState.isEzeInitialized) {
+            initializeAndPrepareDevice();
+            SessionState.isEzeInitialized = true;
+        }
 
         loadConfigFromPrefs();
     }
@@ -1709,6 +1709,11 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
     private void callServiceRequest(JSONObject requestObject) {
         System.out.println("CallServiceRequest " + requestObject.toString());
         EzeAPI.serviceRequest(this, REQUEST_CODE_SERVICE_REQUEST, requestObject);
+    }
+
+    public void initializeAndPrepareDevice() {
+        doInitializeEzeTap();
+        doPrepareDeviceEzeTap();
     }
 
     @Override

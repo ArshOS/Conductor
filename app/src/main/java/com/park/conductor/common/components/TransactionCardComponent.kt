@@ -64,14 +64,16 @@ fun TransactionCardComposable(transaction: MyTransaction, navController: NavHost
                 modifier = Modifier
                     .offset(x = 20.dp)
                     .clip(RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
-                    .background(getBackgroundColor(transaction.mode_of_payment.trim().uppercase()))
+                    .background(getBackgroundColor(transaction.mode_of_payment?.trim()?.uppercase()))
                     .padding(horizontal = 20.dp, vertical = 6.dp)
             ) {
-                Text(
-                    text = transaction.mode_of_payment.trim().uppercase(Locale.getDefault()),
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelLarge
-                )
+                transaction.mode_of_payment?.trim()?.uppercase(Locale.getDefault())?.let {
+                    Text(
+                        text = it,
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
 
             }
         }
@@ -117,8 +119,8 @@ fun TransactionCardComposable(transaction: MyTransaction, navController: NavHost
 //            CASH - Green40 - FFA500
 //            CARD - LinkedIn Blue - 0077B5
 
-private fun getBackgroundColor(paymentMode: String): Color {
-    return when (paymentMode) {
+private fun getBackgroundColor(paymentMode: String?): Color {
+    return if (paymentMode.isNullOrEmpty()) Color.DarkGray else when (paymentMode) {
         "UPI" -> UPI40
         "CARD" -> Card40
         "CASH" -> Cash40

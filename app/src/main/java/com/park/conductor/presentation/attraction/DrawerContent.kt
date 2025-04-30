@@ -1,7 +1,10 @@
 package com.park.conductor.presentation.attraction
 
+import android.app.Activity
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.motionEventSpy
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,10 +45,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.park.conductor.R
 import com.park.conductor.common.utilities.Prefs
+import com.park.conductor.navigation.DeviceProfile
+import com.park.conductor.navigation.MyTransactions
+import com.park.conductor.presentation.MainActivity
 
 @Composable
 fun DrawerContent(navController: NavHostController, drawerState: DrawerState) {
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -73,15 +80,72 @@ fun DrawerContent(navController: NavHostController, drawerState: DrawerState) {
 //                fontWeight = FontWeight.Bold
 //            )
             Spacer(modifier = Modifier.padding(30.dp))
-            DrawerItem(label = "My Profile", icon = Icons.Outlined.Person)
+            Box(
+                modifier = Modifier.clickable {
+                    navController.navigate(DeviceProfile)
+                }
+            ) {
+                DrawerItem(
+                    navController = navController,
+                    label = "My Profile",
+                    icon = Icons.Outlined.Person,
+                )
+            }
+
             DrawerItemDivider()
-            DrawerItem(label = "My Transactions", icon = Icons.AutoMirrored.Outlined.List)
+            Box(
+                modifier = Modifier.clickable {
+                    navController.navigate(MyTransactions)
+                }
+            ) {
+                DrawerItem(
+                    label = "My Transactions",
+                    icon = Icons.AutoMirrored.Outlined.List,
+                    navController = navController
+                )
+            }
             DrawerItemDivider()
-            DrawerItem(label = "Settings", icon = Icons.Outlined.Settings)
+            Box(
+                modifier = Modifier.clickable {
+                    // navController.navigate(DeviceProfile)
+                }
+            ) {
+                DrawerItem(
+                    label = "Settings",
+                    icon = Icons.Outlined.Settings,
+                    navController = navController
+                )
+            }
             DrawerItemDivider()
-            DrawerItem(label = "Privacy Policy", icon = Icons.Outlined.PrivacyTip)
+            Box(
+                modifier = Modifier.clickable {
+                    // navController.navigate(DeviceProfile)
+                }
+            ) {
+                DrawerItem(
+                    label = "Privacy Policy",
+                    icon = Icons.Outlined.PrivacyTip,
+                    navController = navController
+                )
+            }
             DrawerItemDivider()
-            DrawerItem(label = "Logout", icon = Icons.Outlined.Logout)
+            Box(
+                modifier = Modifier.clickable {
+                    Prefs.clear()
+
+                    val activity = context as? Activity
+                    activity?.apply {
+                        startActivity(Intent(this, MainActivity::class.java))
+                        finish()
+                    }
+                }
+            ) {
+                DrawerItem(
+                    label = "Logout",
+                    icon = Icons.Outlined.Logout,
+                    navController = navController
+                )
+            }
             DrawerItemDivider()
 
         }
@@ -93,12 +157,18 @@ fun DrawerContent(navController: NavHostController, drawerState: DrawerState) {
                 .padding(20.dp)
         ) {
             Image(
-                modifier = Modifier.size(50.dp),
+                modifier = Modifier.size(100.dp),
                 painter = painterResource(R.drawable.logo_lda_black),
                 contentDescription = null
             )
             Spacer(modifier = Modifier.padding(5.dp))
-            Text(text = "Lucknow Development Authority", style = MaterialTheme.typography.bodySmall)
+//            Text(text = "Lucknow Development Authority", style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = "H B O C W W B",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.DarkGray,
+                fontWeight = FontWeight.Medium
+            )
         }
 
     }
@@ -110,8 +180,14 @@ fun DrawerItemDivider() {
 }
 
 @Composable
-fun DrawerItem(label: String, icon: ImageVector) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+fun DrawerItem(
+    label: String,
+    icon: ImageVector,
+    navController: NavHostController
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Icon(imageVector = icon, contentDescription = label)
         Spacer(modifier = Modifier.padding(3.dp))
         Text(text = label, style = MaterialTheme.typography.bodyMedium)

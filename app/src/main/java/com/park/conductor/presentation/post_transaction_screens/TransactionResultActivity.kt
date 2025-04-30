@@ -26,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Print
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -50,10 +49,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eze.api.EzeAPI
 import com.google.gson.Gson
-import com.park.conductor.common.utilities.CustomerInfo
-import com.park.conductor.common.utilities.QRCodeGenerator
-import com.park.conductor.common.utilities.TicketBitmapGenerator
-import com.park.conductor.common.utilities.generateStyledTicketBitmap
 import com.park.conductor.common.utilities.generateTicketBitmapsFromJson
 import com.park.conductor.common.utilities.generateTicketFooterBitmap
 import com.park.conductor.common.utilities.restartApp
@@ -61,9 +56,7 @@ import com.park.conductor.data.remote.api.ApiConstant
 import com.park.conductor.data.remote.api.ApiService
 import com.park.conductor.data.remote.api.ApiState
 import com.park.conductor.data.remote.dto.UpdatePaymentResponse
-import com.park.conductor.ezetap.EzeNativeSampleActivity
 import com.park.conductor.ui.theme.Green40
-import kotlinx.coroutines.Delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -262,27 +255,37 @@ fun PaymentSuccessScreen(
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
 
-        val ticketFooterBitmap = generateTicketFooterBitmap(context)
+        val ticketFooterBitmap = generateTicketFooterBitmap(context, data.notes)
 
-        Box (
+        Box(
             modifier = Modifier
-            .fillMaxWidth()
-            .align(Alignment.BottomCenter)
-            .padding(0.dp),
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(0.dp),
         ) {
-            Row (
+            Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(
                     onClick = { restartApp(context) },
-                    modifier = Modifier.weight(1f).background(Color(0XFF0077B5), RoundedCornerShape(0.dp)).padding(10.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(Color(0XFF0077B5), RoundedCornerShape(0.dp))
+                        .padding(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0XFF0077B5))
                 ) {
-                    Icon(modifier = Modifier.size(20.dp), imageVector = Icons.Filled.Home, contentDescription = null)
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        imageVector = Icons.Filled.Home,
+                        contentDescription = null
+                    )
                     Spacer(Modifier.padding(3.dp))
-                    Text(text = "Home", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White))
+                    Text(
+                        text = "Home",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
+                    )
                 }
                 Button(
                     onClick = {
@@ -295,11 +298,19 @@ fun PaymentSuccessScreen(
                                 generateTicketBitmapsFromJson(context, Gson().toJson(data))
                             }
 
-                            tickets.forEachIndexed { _, bitmap ->
+                            val finalTicketList: List<Bitmap> = buildList {
+                                tickets.forEach { ticket ->
+                                    add(ticket)
+                                    add(ticketFooterBitmap)
+                                }
+                            }
+
+
+
+
+                            finalTicketList.forEachIndexed { _, bitmap ->
                                 printLucknowQR(bitmap, ticketFooterBitmap, context)
-//                        delay(1000L)
-//                        printLucknowQRFooter(ticketFooterBitmap, context)
-                                delay(1500L)
+                                delay(2000L)
                             }
 
 
@@ -313,12 +324,12 @@ fun PaymentSuccessScreen(
 //                    val generator = TicketBitmapGenerator.generateTicketBitmapsFromJson(context, dummyJson)
 
 
-                            tickets.forEachIndexed { _, bitmap ->
-                                printLucknowQR(bitmap, bitmap, context)
-
-                                // Optional delay to allow printer to complete
-                                delay(1500L) // 1.5 seconds (adjust based on printer speed)
-                            }
+//                            tickets.forEachIndexed { _, bitmap ->
+//                                printLucknowQR(bitmap, bitmap, context)
+//
+//                                // Optional delay to allow printer to complete
+//                                delay(1500L) // 1.5 seconds (adjust based on printer speed)
+//                            }
                         }
 
 //                val qrTickets = generateTicketBitmapsFromJson(context, dummyJson)
@@ -329,11 +340,17 @@ fun PaymentSuccessScreen(
 
 
                     },
-                    modifier = Modifier.weight(1f)
-                    .background(Green40, RoundedCornerShape(0.dp)).padding(10.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(Green40, RoundedCornerShape(0.dp))
+                        .padding(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Green40)
                 ) {
-                    Icon(modifier = Modifier.size(20.dp), imageVector = Icons.Filled.Print, contentDescription = null)
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        imageVector = Icons.Filled.Print,
+                        contentDescription = null
+                    )
                     Spacer(Modifier.padding(3.dp))
                     Text(
                         text = "Print Tickets",
@@ -421,31 +438,36 @@ fun printLucknowQR(qrCodeBitmap: Bitmap, footerBitmap: Bitmap, context: Context)
         e.printStackTrace()
     }
 
-//    val jsonRequestFooter = JSONObject()
-//
-//    val jsonImageFooterObj = JSONObject()
+}
 
-//    try {
-//        val encodedImageData = getEncoded64ImageStringFromBitmap(footerBitmap)
-//
-//        // Building Image Object
-//        jsonImageFooterObj.put("imageData", encodedImageData)
-//
-//        jsonImageFooterObj.put("imageType", "JPEG")
-//
-//        jsonImageFooterObj.put("height", "") // optional
-//
-//        jsonImageFooterObj.put("weight", "") // optional
-//
-//        jsonRequestFooter.put(
-//            "image",
-//            jsonImageFooterObj
-//        ) // Pass this attribute when you have a valid captured signature image
-//
-//        EzeAPI.printBitmap(context, 10023, jsonRequestFooter)
-//    } catch (e: JSONException) {
-//        e.printStackTrace()
-//    }
+private fun printTicketFooter(footerBitmap: Bitmap, context: Context) {
+    // Footer
+
+    val jsonRequestFooter = JSONObject()
+
+    val jsonImageFooterObj = JSONObject()
+
+    try {
+        val encodedImageData = getEncoded64ImageStringFromBitmap(footerBitmap)
+
+        // Building Image Object
+        jsonImageFooterObj.put("imageData", encodedImageData)
+
+        jsonImageFooterObj.put("imageType", "JPEG")
+
+        jsonImageFooterObj.put("height", "") // optional
+
+        jsonImageFooterObj.put("weight", "") // optional
+
+        jsonRequestFooter.put(
+            "image",
+            jsonImageFooterObj
+        ) // Pass this attribute when you have a valid captured signature image
+
+        EzeAPI.printBitmap(context, 10023, jsonRequestFooter)
+    } catch (e: JSONException) {
+        e.printStackTrace()
+    }
 }
 
 @Preview(showBackground = true)

@@ -1,11 +1,13 @@
 package com.park.conductor.presentation
 
 import LoginScreen
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -36,16 +38,22 @@ import com.ezetap.sdk.EzetapPayApis
 import com.ezetap.sdk.EzetapPayApi
 import com.park.conductor.navigation.Attractions
 import com.park.conductor.navigation.Billing
+import com.park.conductor.navigation.DeviceProfile
+import com.park.conductor.navigation.MyTransactions
 import com.park.conductor.navigation.Redirection
 import com.park.conductor.presentation.attraction.AttractionScreenComposable
 import com.park.conductor.presentation.billing.BillingScreen
+import com.park.conductor.presentation.drawer.device_profile.DeviceProfileScreen
+import com.park.conductor.presentation.drawer.my_transactions.TransactionsScreen
 import com.park.conductor.presentation.redirection.RedirectionScreen
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        AndroidThreeTen.init(this)
 
         // Initialize Ezetap SDK
 //        Ezetap.initialize(this, "<YOUR_USERNAME>", "<YOUR_SECRET_KEY>", object : EzetapCallback {
@@ -95,6 +103,14 @@ class MainActivity : ComponentActivity() {
                         composable<Redirection> { it ->
                             val args = it.toRoute<Redirection>()
                             RedirectionScreen(PaddingValues(), navController, args.tickets, args.amount, args.ticketType, args.totalVisitors, args.attractionName, args.attractionId)
+                        }
+
+                        composable<DeviceProfile> {
+                            DeviceProfileScreen(PaddingValues(), navController)
+                        }
+
+                        composable<MyTransactions> {
+                            TransactionsScreen(PaddingValues(), navController)
                         }
 
                         composable<Dashboard> {

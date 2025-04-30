@@ -333,15 +333,15 @@ fun BuildCounterComposable(
 //                "visitor": 100
 //            }
 //            }
-                    NationalityTag(
-                        labels = listOf("Indian", "Foreigner"),
-                        listOf(
-                            painterResource(id = R.drawable.ic_india),
-                            painterResource(id = R.drawable.ic_globe)
-                        )
-                    )
+//                    NationalityTag(
+//                        labels = listOf("Indian", "Foreigner"),
+//                        listOf(
+//                            painterResource(id = R.drawable.ic_india),
+//                            painterResource(id = R.drawable.ic_globe)
+//                        )
+//                    )
                     PassengerCounterComposable(
-                        title = "Visitor",
+                        title = "PAX",
                         rateInINR = data.pricing.all?.visitor ?: 0f,
                         count = counters["general"]!!,
                         leftTotalCount = leftTotalCount,

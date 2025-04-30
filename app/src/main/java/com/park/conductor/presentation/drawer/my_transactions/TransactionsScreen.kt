@@ -1,5 +1,6 @@
 package com.park.conductor.presentation.drawer.my_transactions
 
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -47,9 +48,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.park.conductor.R
-import com.park.conductor.common.components.DatePickerWithFormattedDisplay
+import com.park.conductor.common.components.DatePickerComposable
 import com.park.conductor.common.components.TransactionCardComposable
 import com.park.conductor.common.utilities.Prefs
 import com.park.conductor.common.utilities.getFormattedDate
@@ -58,7 +58,9 @@ import com.park.conductor.data.remote.api.ApiService
 import com.park.conductor.data.remote.api.ApiState
 import com.park.conductor.data.remote.dto.MyTransactionsResponse
 import com.park.conductor.presentation.post_transaction_screens.TransactionResultViewModel
-import java.time.LocalDate
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -79,35 +81,35 @@ fun TransactionsScreen(
 //    date: selected date in (dd-mm-YYYY) format
 //    by default current date would be selected
 
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var selectedDate by remember { mutableStateOf(convertMillisToDate(System.currentTimeMillis())) }
 
-    val formatedDate = getFormattedDate(
-        today = false,
-        format1 = "dd MMMM yyyy, EEEE",
-        format2 = "dd-MM-yyyy",
-        dateString = selectedDate.toString()
-    )
-
-    val param = remember {
-        ApiConstant.getBaseParam().apply {
-            put("type", "all")
-            put("date", formatedDate)
-        }
-    }
-
-    Log.d("TAG", "Update Params $param")
-
-    val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        if (ApiService.NetworkUtil.isInternetAvailable(context)) {
-            transactionResultViewModel.getMyTransactionResponse(param)
-        } else {
-            ApiService.NetworkUtil.showNoInternetDialog(context)
-        }
-    }
-
-    val stateMyTransactions by transactionResultViewModel.myTransactions.collectAsState()
+//    val formatedDate = getFormattedDate(
+//        today = false,
+//        format1 = "dd MMMM yyyy, EEEE",
+//        format2 = "dd-MM-yyyy",
+//        dateString = selectedDate.toString()
+//    )
+//
+//    val param = remember {
+//        ApiConstant.getBaseParam().apply {
+//            put("type", "all")
+//            put("date", formatedDate)
+//        }
+//    }
+//
+//    Log.d("TAG", "Update Params $param")
+//
+//    val context = LocalContext.current
+//
+//    LaunchedEffect(Unit) {
+//        if (ApiService.NetworkUtil.isInternetAvailable(context)) {
+//            transactionResultViewModel.getMyTransactionResponse(param)
+//        } else {
+//            ApiService.NetworkUtil.showNoInternetDialog(context)
+//        }
+//    }
+//
+//    val stateMyTransactions by transactionResultViewModel.myTransactions.collectAsState()
 
     Scaffold(
         topBar = {
@@ -124,17 +126,23 @@ fun TransactionsScreen(
                     .padding(paddingValues)
             ) {
                 TransactionsComposable(
-                    state = stateMyTransactions,
+                    transactionResultViewModel = transactionResultViewModel,
                     navController = navController,
                     selectedDate = selectedDate,
                     onDateChange = { selectedDate = it }
                 )
+                Log.d("TAG:", "selectedDate $selectedDate")
 
             }
 
         }
     )
 
+}
+
+fun convertMillisToDate(millis: Long): String {
+    val formatter = SimpleDateFormat("d-m-yyyy", Locale.getDefault())
+    return formatter.format(Date(millis))
 }
 
 
@@ -155,16 +163,16 @@ fun SetUpObserverMyTransactions(
 
         is ApiState.Success -> {
             BuildMyTransactionsListUI(state.data, navController)
-            Log.d("TAG: ", "Attraction API success")
+            Log.d("TAG: ", "MyTransactions API success")
         }
 
         is ApiState.Error -> {
 
             BuildMyTransactionsListUI(null, navController)
 
-            Log.d("TAG: ", "Attraction API Failure")
+            Log.d("TAG: ", "MyTransactions API Failure")
 //            BuildApiFailUI(state.message, navController)
-            Log.d("TAG: ", "Attraction API Failure: errorMessage ${state.message}")
+            Log.d("TAG: ", "MyTransactions API Failure: errorMessage ${state.message}")
 
         }
     }
@@ -210,7 +218,7 @@ fun TopBarComposable(
                 color = Color.White
             )
         }
-        Image(painter = painterResource(logoLda), contentDescription = null)
+        Image(modifier = Modifier.size(50.dp), painter = painterResource(logoLda), contentDescription = null)
 
     }
 }
@@ -251,10 +259,10 @@ fun InfoBar(label: String, info: String, icon: ImageVector) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TransactionsComposable(
-    selectedDate: LocalDate,
-    onDateChange: (LocalDate) -> Unit,
-    state: ApiState<MyTransactionsResponse>,
-    navController: NavHostController
+    selectedDate: String,
+    onDateChange: (String) -> Unit,
+    navController: NavHostController,
+    transactionResultViewModel: TransactionResultViewModel
 ) {
 
     val context = LocalContext.current
@@ -276,33 +284,96 @@ fun TransactionsComposable(
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(Modifier.padding(10.dp))
+        Spacer(Modifier.padding(5.dp))
 
         Box(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp)
         ) {
-            DatePickerWithFormattedDisplay(
-                selectedDate = selectedDate,
-                onDateChange = onDateChange
+            DatePickerComposable(
+                placeholder = selectedDate,
+                onItemSelected = onDateChange
             )
         }
 
         Spacer(Modifier.height(5.dp))
+
+        var paymentMode by remember { mutableStateOf("All") }
 
         Row(
             horizontalArrangement = Arrangement.Start,
             modifier = Modifier.fillMaxWidth()
         ) {
             Spacer(modifier = Modifier.padding(5.dp))
-            PaymentModeTag("All")
-            PaymentModeTag("UPI")
-            PaymentModeTag("Cash")
-            PaymentModeTag("Card")
+            Box(
+                Modifier.clickable {
+                    paymentMode = "All"
+                }
+            ) { PaymentModeTag("All") }
+            Box(
+                Modifier.clickable {
+                    paymentMode = "UPI"
+                }
+            ) { PaymentModeTag("UPI") }
+            Box(
+                Modifier.clickable {
+                    paymentMode = "Cash"
+                }
+            ) { PaymentModeTag("Cash") }
+            Box(
+                Modifier.clickable {
+                    paymentMode = "Card"
+                }
+            ) { PaymentModeTag("Card") }
+
         }
 
-        SetUpObserverMyTransactions(state, navController)
+        LaunchedEffect(paymentMode, selectedDate) {
+            getTransactions(
+                transactionResultViewModel = transactionResultViewModel,
+                paymentMode = paymentMode,
+                selectedDate = selectedDate,
+                context = context
+            )
+        }
+
+        val stateMyTransactions by transactionResultViewModel.myTransactions.collectAsState()
+
+        SetUpObserverMyTransactions(stateMyTransactions, navController)
+
+
     }
 }
+
+fun getTransactions(
+    transactionResultViewModel: TransactionResultViewModel,
+    paymentMode: String,
+    selectedDate: String,
+    context: Context,
+) {
+    val formatedDate = getFormattedDate(
+        today = false,
+        format1 = "dd/MM/yyyy",
+        format2 = "dd-MM-yyyy",
+        dateString = selectedDate
+    )
+    Log.d("TAG", "onDateChange $selectedDate, formatedDate $formatedDate")
+
+    val param = ApiConstant.getBaseParam().apply {
+        put("type", paymentMode.lowercase(Locale.ROOT))
+        put("date", formatedDate)
+    }
+
+    Log.d("TAG", "Update Params $param")
+
+    if (ApiService.NetworkUtil.isInternetAvailable(context)) {
+        transactionResultViewModel.getMyTransactionResponse(param)
+    } else {
+        ApiService.NetworkUtil.showNoInternetDialog(context)
+    }
+}
+
 
 @Composable
 fun PaymentModeTag(label: String) {
