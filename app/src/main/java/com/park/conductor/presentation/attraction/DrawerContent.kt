@@ -74,11 +74,11 @@ fun DrawerContent(navController: NavHostController, drawerState: DrawerState) {
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )
-//            Text(
-//                text = Prefs.getLogin()?.userInfo?.userName.toString(),
-//                style = MaterialTheme.typography.bodyLarge,
-//                fontWeight = FontWeight.Bold
-//            )
+            Text(
+                text = Prefs.getLogin()?.userInfo?.userName.toString(),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(modifier = Modifier.padding(30.dp))
             Box(
                 modifier = Modifier.clickable {
@@ -105,30 +105,18 @@ fun DrawerContent(navController: NavHostController, drawerState: DrawerState) {
                 )
             }
             DrawerItemDivider()
-            Box(
-                modifier = Modifier.clickable {
-                    // navController.navigate(DeviceProfile)
-                }
-            ) {
-                DrawerItem(
-                    label = "Settings",
-                    icon = Icons.Outlined.Settings,
-                    navController = navController
-                )
-            }
-            DrawerItemDivider()
-            Box(
-                modifier = Modifier.clickable {
-                    // navController.navigate(DeviceProfile)
-                }
-            ) {
-                DrawerItem(
-                    label = "Privacy Policy",
-                    icon = Icons.Outlined.PrivacyTip,
-                    navController = navController
-                )
-            }
-            DrawerItemDivider()
+//            Box(
+//                modifier = Modifier.clickable {
+//                    // navController.navigate(DeviceProfile)
+//                }
+//            ) {
+//                DrawerItem(
+//                    label = "Privacy Policy",
+//                    icon = Icons.Outlined.PrivacyTip,
+//                    navController = navController
+//                )
+//            }
+//            DrawerItemDivider()
             Box(
                 modifier = Modifier.clickable {
                     Prefs.clear()
@@ -162,13 +150,8 @@ fun DrawerContent(navController: NavHostController, drawerState: DrawerState) {
                 contentDescription = null
             )
             Spacer(modifier = Modifier.padding(5.dp))
-//            Text(text = "Lucknow Development Authority", style = MaterialTheme.typography.bodySmall)
-            Text(
-                text = "H B O C W W B",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.DarkGray,
-                fontWeight = FontWeight.Medium
-            )
+            Text(text = "Lucknow Development Authority", style = MaterialTheme.typography.bodySmall)
+
         }
 
     }

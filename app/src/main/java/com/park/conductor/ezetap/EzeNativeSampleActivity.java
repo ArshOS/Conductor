@@ -86,12 +86,13 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
     private TextView textViewAttractionName;
     private TextView textViewAmount;
     private TextView textViewOrderId;
+    private ImageView backIcon;
 
     private String attractionName;
     private String attractionId;
     private Float amountToBePaid;
     private String ticketUniqueId;
-    private int paymentMode;
+    private String paymentMode;
 
     /**
      * The Base64 Image bitmap string for attach e-signature
@@ -120,6 +121,15 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
         textViewAttractionName = findViewById(R.id.tv_attraction_name);
         textViewAmount = findViewById(R.id.tv_amount);
         textViewOrderId = findViewById(R.id.tv_order_id);
+        backIcon = findViewById(R.id.ic_back);
+
+        backIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
 
         textViewParkName.setText(getIntent().getStringExtra("park_name"));
         attractionName = getIntent().getStringExtra("attraction_name");
@@ -158,14 +168,14 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
         int id = view.getId();
 
         if (id == R.id.btnUPITxn2) {
-            paymentMode = 3;
-            openPaymentPayloadPopup2(REQUEST_CODE_UPI, paymentMode);
+            paymentMode = String.valueOf(3);
+            openPaymentPayloadPopup2(REQUEST_CODE_UPI);
         } else if (id == R.id.btnSale2) {
-            paymentMode = 2;
-            openPaymentPayloadPopup2(REQUEST_CODE_SALE_TXN, paymentMode);
+            paymentMode = String.valueOf(2);
+            openPaymentPayloadPopup2(REQUEST_CODE_SALE_TXN);
         } else if (id == R.id.btnCashTxn2) {
-            paymentMode = 1;
-            openPaymentPayloadPopup2(REQUEST_CODE_CASH_TXN, paymentMode);
+            paymentMode = String.valueOf(1);
+            openPaymentPayloadPopup2(REQUEST_CODE_CASH_TXN);
         } else if (id == R.id.btnInitialize) {
             doInitializeEzeTap();
         } else if (id == R.id.btnPrepare) {
@@ -1058,7 +1068,7 @@ public class EzeNativeSampleActivity extends Activity implements OnClickListener
 
     }
 
-    private void openPaymentPayloadPopup2(final int REQUEST_CODE, int paymentMode) {
+    private void openPaymentPayloadPopup2(final int REQUEST_CODE) {
         try {
             LayoutInflater layoutInflater = LayoutInflater.from(EzeNativeSampleActivity.this);
             final View customView = layoutInflater.inflate(R.layout.payment_payload_popup2, null);

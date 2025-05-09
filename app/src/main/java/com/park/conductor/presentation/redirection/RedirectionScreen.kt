@@ -145,6 +145,9 @@ fun SetUpObserverContinuePayment(
             intent.putExtra("amount", amount)
             intent.putExtra("attraction_name", attractionName)
             intent.putExtra("attraction_id", attractionId)
+
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+
             context.startActivity(intent)
         }
 

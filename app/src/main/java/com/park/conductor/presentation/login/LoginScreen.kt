@@ -29,15 +29,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.park.conductor.R
 import com.park.conductor.common.utilities.Prefs
+import com.park.conductor.data.remote.api.ApiConstant
+import com.park.conductor.data.remote.api.ApiService
 import com.park.conductor.data.remote.api.ApiState
+import com.park.conductor.data.remote.dto.ContactUsResponse
 import com.park.conductor.data.remote.dto.LoginResponse
 import com.park.conductor.navigation.Attractions
-import com.park.conductor.navigation.Dashboard
 import com.park.conductor.navigation.Login
 import com.park.conductor.presentation.login.LoginViewModel
 import com.park.conductor.ui.theme.Green40
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,155 +48,179 @@ fun LoginScreen(
     onLoginSuccess: (String, String) -> Unit,
     loginViewModel: LoginViewModel = hiltViewModel(),
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     val isButtonEnabled = username.isNotEmpty() && password.length >= 8
     val context = LocalContext.current
 
-    Surface(
+    val paramContactUs = remember {
+        ApiConstant.getBaseParam()
+    }
+
+    LaunchedEffect(Unit) {
+
+        if (ApiService.NetworkUtil.isInternetAvailable(context)) {
+            loginViewModel.getContactUsResponse(paramContactUs)
+        } else {
+            ApiService.NetworkUtil.showNoInternetDialog(context)
+        }
+    }
+
+    val stateContactUs by loginViewModel.contactUs.collectAsState()
+
+    SetUpObserverContactUs(stateContactUs)
+
+
+
+
+    Scaffold(
         modifier = Modifier.fillMaxSize(),
-        color = Color.White,
-    ) {
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp, 20.dp, 10.dp, 10.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.NaturePeople,
-                        contentDescription = "Park Ticket Booking Icon",
-                        tint = Green40,
-                        modifier = Modifier.size(70.dp)
-                    )
+        content = { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
 
-                    Text(
-                        text = "ParkEasy",
-                        style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Green40
-                    )
-                }
-                Text(
-                    text = "An initiative by Lucknow Development Authority",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Light,
-                    color = Color.Black
-                )
-            }
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Box(
-                modifier = Modifier
-                    .padding(20.dp)
-                    .border(0.5.dp, Color.Black, RoundedCornerShape(8.dp))
-                    .padding(20.dp)
-            ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxSize()
+                        .padding(10.dp, 20.dp, 10.dp, 10.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = "Login",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.NaturePeople,
+                                contentDescription = "Park Ticket Booking Icon",
+                                tint = Green40,
+                                modifier = Modifier.size(70.dp)
+                            )
 
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    TextField(
-                        value = username,
-                        onValueChange = {
-                            if (it.matches(Regex("[a-zA-Z0-9._]*"))) {
-                                username = it.trim()
-                            }
-                        },
-                        label = { Text("Username") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color.White // Sets the background color to white
+                            Text(
+                                text = "ParkEasy",
+                                style = MaterialTheme.typography.displayMedium,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Green40
+                            )
+                        }
+                        Text(
+                            text = "An initiative by Lucknow Development Authority",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Light,
+                            color = Color.Black
                         )
-                    )
+                    }
+                    Spacer(modifier = Modifier.height(30.dp))
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Box(
+                        modifier = Modifier
+                            .padding(20.dp)
+                            .border(0.5.dp, Color.Black, RoundedCornerShape(8.dp))
+                            .padding(20.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = "Login",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
 
-                    TextField(
-                        value = password,
-                        onValueChange = { password = it.trim() },
-                        label = { Text("Password") },
-                        singleLine = true,
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    imageVector = if (passwordVisible) Icons.Filled.RemoveRedEye else Icons.Filled.Lock,
-                                    contentDescription = "Toggle Password Visibility"
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            TextField(
+                                value = username,
+                                onValueChange = {
+                                    if (it.matches(Regex("[a-zA-Z0-9._]*"))) {
+                                        username = it.trim()
+                                    }
+                                },
+                                label = { Text("Username") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = TextFieldDefaults.textFieldColors(
+                                    containerColor = Color.White // Sets the background color to white
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            TextField(
+                                value = password,
+                                onValueChange = { password = it.trim() },
+                                label = { Text("Password") },
+                                singleLine = true,
+                                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                                trailingIcon = {
+                                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                        Icon(
+                                            imageVector = if (passwordVisible) Icons.Filled.RemoveRedEye else Icons.Filled.Lock,
+                                            contentDescription = "Toggle Password Visibility"
+                                        )
+                                    }
+                                },
+                                colors = TextFieldDefaults.textFieldColors(
+                                    containerColor = Color.White // Sets the background color to white
+                                )
+
+                            )
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Button(
+                                onClick = { onLoginSuccess(username, password) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 30.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                enabled = isButtonEnabled,
+                                colors = ButtonColors(
+                                    contentColor = Color.White,
+                                    containerColor = Green40,
+                                    disabledContentColor = Color.Gray,
+                                    disabledContainerColor = Color.LightGray
+                                )
+                            ) {
+                                Text("Login")
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Trouble logging in? ")
+                                Text(
+                                    text = "Contact admin.",
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color.Blue,
+                                    style = TextStyle(textDecoration = TextDecoration.Underline),
+                                    modifier = Modifier.clickable {
+                                        Toast.makeText(context, "Contacting admin...", Toast.LENGTH_SHORT)
+                                            .show()
+                                    }
                                 )
                             }
-                        },
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color.White // Sets the background color to white
-                        )
-
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Button(
-                        onClick = { onLoginSuccess(username, password) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 30.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        enabled = isButtonEnabled,
-                        colors = ButtonColors(
-                            contentColor = Color.White,
-                            containerColor = Green40,
-                            disabledContentColor = Color.Gray,
-                            disabledContainerColor = Color.LightGray
-                        )
-                    ) {
-                        Text("Login")
+                        }
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Trouble logging in? ")
-                        Text(
-                            text = "Contact admin.",
-                            fontWeight = FontWeight.Medium,
-                            color = Color.Blue,
-                            style = TextStyle(textDecoration = TextDecoration.Underline),
-                            modifier = Modifier.clickable {
-                                Toast.makeText(context, "Contacting admin...", Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-                        )
-                    }
-                }
-            }
 //            Row(
 //                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
 //                horizontalArrangement = Arrangement.SpaceBetween
@@ -212,18 +238,30 @@ fun LoginScreen(
 //                    LogoImage(R.drawable.logo_hdfc)
 //                }
 //            }
-        }
+                }
 
-        val state by loginViewModel.login.collectAsState()
-        SetUpObserver(state, navController)
-    }
+                val state by loginViewModel.login.collectAsState()
+                SetUpObserver(state, navController, snackBarHostState)
+            }
+        }
+    )
+}
+
+@Composable
+fun SetUpObserverContactUs(stateContactUs: ApiState<ContactUsResponse>) {
+
+    
 }
 
 
 @Composable
-fun SetUpObserver(state: ApiState<LoginResponse>, navController: NavController) {
-    val snackBarHostState = remember { SnackbarHostState() }
+fun SetUpObserver(
+    state: ApiState<LoginResponse>,
+    navController: NavController,
+    snackBarHostState: SnackbarHostState
+) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(state) {
         when (state) {
@@ -242,12 +280,19 @@ fun SetUpObserver(state: ApiState<LoginResponse>, navController: NavController) 
             }
 
             is ApiState.Error -> {
-                Log.d("TAG", "In login Errorrrrrrrrrrrrrrrrr")
-                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+//                Log.d("TAG", "In login Errorrrrrrrrrrrrrrrrr")
+//                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
                 Log.d("TAG", "login  error message + ${state.message}")
+//
+//                val errorMessage = state.message ?: "Unknown error occurred"
+//                snackBarHostState.showSnackbar(errorMessage)
 
-                val errorMessage = state.message ?: "Unknown error occurred"
-                snackBarHostState.showSnackbar(errorMessage)
+                coroutineScope.launch {
+                    snackBarHostState.showSnackbar(
+                        message = state.message ?: "An error occurred",
+                        duration = SnackbarDuration.Indefinite // Persistent until user dismisses
+                    )
+                }
 
             }
         }

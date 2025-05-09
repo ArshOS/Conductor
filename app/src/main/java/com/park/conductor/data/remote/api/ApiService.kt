@@ -6,6 +6,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.park.conductor.common.utilities.App
 import com.park.conductor.data.remote.dto.AttractionDetailsResponse
+import com.park.conductor.data.remote.dto.ContactUsResponse
 import com.park.conductor.data.remote.dto.ContinuePaymentResponse
 import com.park.conductor.data.remote.dto.DashboardResponse
 import com.park.conductor.data.remote.dto.LoginResponse
@@ -42,6 +43,9 @@ interface ApiService {
 
     @GET("pos_my_transactions")
     suspend fun myTransactions(@QueryMap param: HashMap<String, Any>): MyTransactionsResponse
+
+    @GET("pos_contactus")
+    suspend fun contactUs(@QueryMap param: HashMap<String, Any>): ContactUsResponse
 
     @GET("tspuser_dashboard")
     suspend fun dashboard(@QueryMap param: HashMap<String, Any>): DashboardResponse

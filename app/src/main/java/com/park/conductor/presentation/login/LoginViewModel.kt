@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.park.conductor.data.remote.api.ApiController
 import com.park.conductor.data.remote.api.ApiState
 import com.park.conductor.data.remote.api.HomeRepository
+import com.park.conductor.data.remote.dto.ContactUsResponse
 import com.park.conductor.data.remote.dto.LoginResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,4 +39,26 @@ class LoginViewModel: ViewModel() {
         }
     }
 
+    private val _contactUs : MutableStateFlow<ApiState<ContactUsResponse>> = MutableStateFlow(
+        ApiState.loading())
+    val contactUs: StateFlow<ApiState<ContactUsResponse>> = _contactUs.asStateFlow()
+
+
+    fun getContactUsResponse(param : HashMap<String,Any>){
+        viewModelScope.launch {
+            try {
+                val res = HomeRepository.contactUs(param = param, api = ApiController.getApi())
+
+                if (res.status) {
+                    _contactUs.value = ApiState.success(res)
+                } else {
+                    Log.d("TAG","In else Condition")
+                    _contactUs.value = ApiState.Error(res.message.toString())
+                }
+            } catch (e: Exception) {
+                Log.d("TAG","In Catch Condition")
+                _contactUs.value = ApiState.Error(e.localizedMessage ?: "Something went wrong")
+            }
+        }
+    }
 }

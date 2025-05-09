@@ -18,7 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
@@ -114,11 +114,13 @@ fun BillingScreen(
     Scaffold(
         topBar = {
             TopBarComposable(
+                false,
                 coroutineScope,
                 drawerState,
-                Icons.Filled.Menu,
+                Icons.Filled.ArrowBackIosNew,
                 Prefs.getLogin()?.userInfo?.parkName,
-                R.drawable.logo_lda_white
+                R.drawable.logo_lda_white,
+                navController
             )
         },
         content = { paddingValues ->
@@ -341,7 +343,7 @@ fun BuildCounterComposable(
 //                        )
 //                    )
                     PassengerCounterComposable(
-                        title = "PAX",
+                        title = "Visitor",
                         rateInINR = data.pricing.all?.visitor ?: 0f,
                         count = counters["general"]!!,
                         leftTotalCount = leftTotalCount,
@@ -634,6 +636,8 @@ private fun PayNowButtonComposable(
                         attractionId = attractionId
                     )
                 )
+
+
 
 
 //                val intent = Intent(context, EzeNativeSampleActivity::class.java)

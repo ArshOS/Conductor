@@ -103,8 +103,10 @@ fun generateTicketFooterBitmap(context: Context, notes: String?): Bitmap {
 
 }
 
-fun generateTicketBitmapsFromJson(context: Context, json: String): List<Bitmap> {
+fun generateTicketBitmapsFromJson(context: Context, json: String): List<Pair<String, Bitmap>> {
     val ticketBitmaps = mutableListOf<Bitmap>()
+
+    val ticketBitmapsQRPair = mutableListOf<Pair<String, Bitmap>>()
 
     try {
         val root = JSONObject(json)
@@ -213,7 +215,7 @@ fun generateTicketBitmapsFromJson(context: Context, json: String): List<Bitmap> 
 
             y += 20
             canvas.drawText(visitorType, width / 2f, y.toFloat(), paint); y += lineSpacing
-            canvas.drawText("Amount: $amount", width / 2f, y.toFloat(), paint); y += lineSpacing
+            canvas.drawText("Amount: Rs. $amount", width / 2f, y.toFloat(), paint); y += lineSpacing
             canvas.drawText(
                 "Payment Mode: $paymentMode",
                 width / 2f,
@@ -282,14 +284,16 @@ fun generateTicketBitmapsFromJson(context: Context, json: String): List<Bitmap> 
 ////            canvas.drawText("Developed by Powered by", width / 2f, y.toFloat(), paintSmall)
 //            canvas.drawText("========= THANK YOU =========", width / 2f, y.toFloat(), paintHeading)
 
-            ticketBitmaps.add(bitmap)
+//            ticketBitmaps.add(bitmap)
+
+            ticketBitmapsQRPair.add(Pair(qrData, bitmap))
         }
 
     } catch (e: Exception) {
         e.printStackTrace()
     }
 
-    return ticketBitmaps
+    return ticketBitmapsQRPair
 }
 
 private fun generateQRCode(data: String, size: Int): Bitmap? {
@@ -756,8 +760,8 @@ private fun TicketPreview() {
         generateTicketBitmapsFromJson(context, jsonStr)
 //        generateTicketFooterBitmap(context, "Ticket is non refundable and valid for same business day only.")
     }
-    TicketBitmapView(bitmap = bitmap[0])
-//    TicketBitmapView(bitmap = bitmap)
+//    TicketBitmapView(bitmap = bitmap[0])
+////    TicketBitmapView(bitmap = bitmap)
 
 
 }

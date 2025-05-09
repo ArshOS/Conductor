@@ -8,6 +8,7 @@ import android.widget.DatePicker
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -67,6 +68,7 @@ fun DatePickerComposable(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start,
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
@@ -83,9 +85,9 @@ fun DatePickerComposable(
             Text(
                 text = if (selectedDate.isEmpty()) "Today" else getFormattedDate(today = false, format1 = "dd-mm-yyyy", format2 = "dd-mm-yyyy", selectedDate),
                 modifier = Modifier.weight(1f),
-                color = Color.Black,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
+                color = Green40,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
             )
 
         }

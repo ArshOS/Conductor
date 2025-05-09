@@ -326,7 +326,7 @@ class TicketBitmapGenerator(private val context: Context) {
         paint.textSize = 30f
         paint.typeface = Typeface.DEFAULT
 
-        canvas.drawText("Amount: ${data.getString("amount")}", width / 2f, y.toFloat(), paint); y += 30
+        canvas.drawText("Amount: Rs.${data.getString("amount")}", width / 2f, y.toFloat(), paint); y += 30
         canvas.drawText("Payment Mode: ${data.getString("payment_mode")}", width / 2f, y.toFloat(), paint); y += 45
 
         // QR Code
@@ -513,9 +513,9 @@ private fun TicketPreview() {
         "visit_date": "10-04-2025",
         "visitor_type": "INDAIN-ADULT",
         "notes": "Ticket is non refundable and valid for same business day only.",
-        "amount": "₹20",
+        "amount": "20",
         "additional_charge": "₹2",
-        "total": "₹22",
+        "total": "22",
         "payment_mode": "Card",
         "qr_data": "56748374646",
         "timestamp": "10-04-2025 02:53 PM"

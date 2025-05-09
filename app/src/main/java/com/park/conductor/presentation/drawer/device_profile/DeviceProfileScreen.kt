@@ -1,10 +1,7 @@
 package com.park.conductor.presentation.drawer.device_profile
 
-import android.app.Activity
-import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,9 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Call
-import androidx.compose.material.icons.outlined.ConfirmationNumber
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.VerifiedUser
@@ -29,14 +25,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -46,7 +36,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
 import com.park.conductor.R
 import com.park.conductor.common.utilities.Prefs
 
@@ -60,9 +49,10 @@ fun DeviceProfileScreen(
     Scaffold(
         topBar = {
             TopBarComposable(
-                Icons.Filled.Menu,
+                Icons.Filled.ArrowBackIosNew,
                 Prefs.getLogin()?.userInfo?.parkName,
-                R.drawable.logo_lda_white
+                R.drawable.logo_lda_white,
+                navController
             )
         },
         content = { paddingValues ->
@@ -81,9 +71,10 @@ fun DeviceProfileScreen(
 
 @Composable
 fun TopBarComposable(
-    menu: ImageVector,
+    icon: ImageVector,
     parkName: String?,
-    logoLda: Int
+    logoLda: Int,
+    navController: NavHostController
 ) {
     Row(
         modifier = Modifier
@@ -97,8 +88,10 @@ fun TopBarComposable(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                modifier = Modifier.clickable { },
-                imageVector = menu, contentDescription = null, tint = Color.White
+                modifier = Modifier.clickable {
+                    navController.popBackStack()
+                },
+                imageVector = icon, contentDescription = null, tint = Color.White
             )
             Spacer(modifier = Modifier.padding(10.dp))
             Text(
@@ -160,7 +153,7 @@ fun DeviceProfileComposable() {
                 .fillMaxWidth()
                 .background(Color.LightGray)
                 .padding(20.dp),
-            text = "Operator Profile",
+            text = "My Profile",
             textAlign = TextAlign.Center,
             color = Color.Black,
             style = MaterialTheme.typography.bodyMedium,

@@ -46,7 +46,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -122,11 +121,13 @@ fun AttractionScreenComposable(
         Scaffold(
             topBar = {
                 TopBarComposable(
+                    true,
                     coroutineScope,
                     drawerState,
                     Icons.Filled.Menu,
                     Prefs.getLogin()?.userInfo?.parkName,
-                    R.drawable.logo_lda_white
+                    R.drawable.logo_lda_white,
+                    navController
                 )
             },
             content = { paddingValues ->
@@ -145,11 +146,13 @@ fun AttractionScreenComposable(
 
 @Composable
 fun TopBarComposable(
+    isAttractionsScreen: Boolean,
     coroutineScope: CoroutineScope,
     drawerState: DrawerState,
     menu: ImageVector,
     parkName: String?,
-    logoLda: Int
+    logoLda: Int,
+    navController: NavHostController
 ) {
     Row(
         modifier = Modifier
@@ -163,7 +166,12 @@ fun TopBarComposable(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(modifier = Modifier.clickable {
-                coroutineScope.launch { drawerState.open() }
+                if (isAttractionsScreen) {
+                    coroutineScope.launch { drawerState.open() }
+                } else {
+                    navController.popBackStack()
+                }
+
             }, imageVector = menu, contentDescription = null, tint = Color.White)
             Spacer(modifier = Modifier.padding(10.dp))
             Text(
@@ -254,7 +262,7 @@ fun BuildAttractionsUI(data: AttractionDetailsResponse?, navController: NavHostC
                     }
 
                     tickets.forEachIndexed { _, bitmap ->
-                        printLucknowQR(bitmap, ticketFooterBitmap, context)
+                        printLucknowQR(bitmap.second, ticketFooterBitmap, context)
 //                        delay(1000L)
 //                        printLucknowQRFooter(ticketFooterBitmap, context)
                         delay(1500L)

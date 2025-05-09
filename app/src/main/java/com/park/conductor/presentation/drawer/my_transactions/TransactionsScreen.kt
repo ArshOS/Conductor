@@ -19,11 +19,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -58,7 +59,9 @@ import com.park.conductor.data.remote.api.ApiService
 import com.park.conductor.data.remote.api.ApiState
 import com.park.conductor.data.remote.dto.MyTransactionsResponse
 import com.park.conductor.presentation.post_transaction_screens.TransactionResultViewModel
+import com.park.conductor.ui.theme.Green40
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -81,7 +84,12 @@ fun TransactionsScreen(
 //    date: selected date in (dd-mm-YYYY) format
 //    by default current date would be selected
 
-    var selectedDate by remember { mutableStateOf(convertMillisToDate(System.currentTimeMillis())) }
+    val calendar = Calendar.getInstance()
+    val currentYear = calendar.get(Calendar.YEAR)
+    val currentMonth = calendar.get(Calendar.MONTH)
+    val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
+
+    var selectedDate by remember { mutableStateOf("$currentDay/${currentMonth + 1}/$currentYear") }
 
 //    val formatedDate = getFormattedDate(
 //        today = false,
@@ -114,9 +122,10 @@ fun TransactionsScreen(
     Scaffold(
         topBar = {
             TopBarComposable(
-                Icons.Filled.Menu,
+                Icons.Filled.ArrowBackIosNew,
                 Prefs.getLogin()?.userInfo?.parkName,
-                R.drawable.logo_lda_white
+                R.drawable.logo_lda_white,
+                navController
             )
         },
         content = { paddingValues ->
@@ -131,7 +140,7 @@ fun TransactionsScreen(
                     selectedDate = selectedDate,
                     onDateChange = { selectedDate = it }
                 )
-                Log.d("TAG:", "selectedDate $selectedDate")
+                Log.d("TAG:", "selectedDate current $selectedDate")
 
             }
 
@@ -194,7 +203,8 @@ fun BuildMyTransactionsListUI(data: MyTransactionsResponse?, navController: NavH
 fun TopBarComposable(
     menu: ImageVector,
     parkName: String?,
-    logoLda: Int
+    logoLda: Int,
+    navController: NavHostController
 ) {
     Row(
         modifier = Modifier
@@ -208,7 +218,9 @@ fun TopBarComposable(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                modifier = Modifier.clickable { },
+                modifier = Modifier.clickable {
+                    navController.popBackStack()
+                },
                 imageVector = menu, contentDescription = null, tint = Color.White
             )
             Spacer(modifier = Modifier.padding(10.dp))
@@ -218,7 +230,11 @@ fun TopBarComposable(
                 color = Color.White
             )
         }
-        Image(modifier = Modifier.size(50.dp), painter = painterResource(logoLda), contentDescription = null)
+        Image(
+            modifier = Modifier.size(50.dp),
+            painter = painterResource(logoLda),
+            contentDescription = null
+        )
 
     }
 }
@@ -289,7 +305,6 @@ fun TransactionsComposable(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(5.dp)
         ) {
             DatePickerComposable(
                 placeholder = selectedDate,
@@ -307,25 +322,33 @@ fun TransactionsComposable(
         ) {
             Spacer(modifier = Modifier.padding(5.dp))
             Box(
-                Modifier.clickable {
-                    paymentMode = "All"
-                }
-            ) { PaymentModeTag("All") }
+                Modifier
+                    .wrapContentSize()
+                    .clickable {
+                        paymentMode = "All"
+                    }
+            ) { PaymentModeTag("All", paymentMode) }
             Box(
-                Modifier.clickable {
-                    paymentMode = "UPI"
-                }
-            ) { PaymentModeTag("UPI") }
+                Modifier
+                    .wrapContentSize()
+                    .clickable {
+                        paymentMode = "UPI"
+                    }
+            ) { PaymentModeTag("UPI", paymentMode) }
             Box(
-                Modifier.clickable {
-                    paymentMode = "Cash"
-                }
-            ) { PaymentModeTag("Cash") }
+                Modifier
+                    .wrapContentSize()
+                    .clickable {
+                        paymentMode = "Cash"
+                    }
+            ) { PaymentModeTag("Cash", paymentMode) }
             Box(
-                Modifier.clickable {
-                    paymentMode = "Card"
-                }
-            ) { PaymentModeTag("Card") }
+                Modifier
+                    .wrapContentSize()
+                    .clickable {
+                        paymentMode = "Card"
+                    }
+            ) { PaymentModeTag("Card", paymentMode) }
 
         }
 
@@ -376,13 +399,22 @@ fun getTransactions(
 
 
 @Composable
-fun PaymentModeTag(label: String) {
+fun PaymentModeTag(label: String, paymentMode: String) {
     Text(
         modifier = Modifier
             .padding(horizontal = 5.dp)
-            .border(width = 1.dp, shape = RoundedCornerShape(5.dp), color = Color.Black)
+            .background(
+                color = if (label == paymentMode) Green40 else Color.Transparent,
+                shape = RoundedCornerShape(5.dp)
+            )
+            .border(
+                width = 1.dp,
+                shape = RoundedCornerShape(5.dp),
+                color = if (label == paymentMode) Color.Transparent else Color.Black
+            )
             .padding(horizontal = 10.dp, vertical = 3.dp),
-        text = label
+        text = label,
+        color = if (label == paymentMode) Color.White else Color.Black
     )
 }
 

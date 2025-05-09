@@ -36,6 +36,14 @@
                 android:orientation="horizontal"
                 android:padding="12dp">
 
+                <ImageView
+                    android:id="@+id/ic_back"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:paddingEnd="10dp"
+                    android:paddingStart="0dp"
+                    android:src="@drawable/ic_back_ios" />
+
                 <TextView
                     android:id="@+id/tv_park_name"
                     android:layout_width="0dp"

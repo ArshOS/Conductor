@@ -10,4 +10,5 @@ object HomeRepository {
     suspend fun continuePayment(param: HashMap<String, Any>, api: ApiService) = api.continuePayment(param)
     suspend fun updatePayment(param: HashMap<String, Any>, api: ApiService) = api.updatePayment(param)
     suspend fun myTransactions(param: HashMap<String, Any>, api: ApiService) = api.myTransactions(param)
+    suspend fun contactUs(param: HashMap<String, Any>, api: ApiService) = api.contactUs(param)
 }
